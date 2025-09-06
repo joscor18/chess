@@ -7,19 +7,25 @@ import java.util.Collection;
 
 
 public class BishopCalc {
-    private final int[][] offsets = {
-            {1,1}, {1,-1}, {2,2}, {2,-2}, {3,3},
-            {3,-3}, {4,4}, {4,-4}, {5,5}, {5,-5},
-            {6,6}, {6,-6}, {7,7}, {7,-7}
+    private final int[][] directions = {
+            {1,1}, {1,-1}, {-1, 1}, {-1,-1}
     };
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>();
         ChessPiece myPiece = board.getPiece(myPosition);
 
-        for (int[] offset : offsets){
-            int newRow = myPosition.getRow() + offset[0];
-            int newCol = myPosition.getColumn() + offset[1];
+        for (int[] direction : directions){
+            int row = myPosition.getRow();
+            int col = myPosition.getColumn();
+
+            while (true){
+                row += direction[0];
+                col += direction[1];
+
+                ChessPosition newPosition = new ChessPosition(row, col);
+                ChessPiece target = board.getPiece(newPosition);
+            }
         }
         return moves;
     }
