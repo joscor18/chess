@@ -42,4 +42,11 @@ public class ChessBoard {
 
         throw new RuntimeException("Not implemented");
     }
+
+    /**
+     * checks that pieces stay within bounds
+     */
+    public boolean inBounds (int row, int col){
+        return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+    }
 }

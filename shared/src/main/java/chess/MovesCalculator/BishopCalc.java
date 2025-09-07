@@ -8,7 +8,7 @@ import java.util.Collection;
 
 public class BishopCalc {
     private final int[][] directions = {
-            {1,1}, {1,-1}, {-1, 1}, {-1,-1}
+            {1,1}, {1,-1}, {-1, 1}, {-1,-1} // get general directions not all steps
     };
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
@@ -23,8 +23,16 @@ public class BishopCalc {
                 row += direction[0];
                 col += direction[1];
 
+                if (!board.inBounds(row, col)) break; // make sure in bounds
+
                 ChessPosition newPosition = new ChessPosition(row, col);
                 ChessPiece target = board.getPiece(newPosition);
+
+                if(target == null){// make sure target space is empty
+                    moves.add (new ChessMove(myPosition, newPosition, null));
+                } else { // if not empty then stop
+                    break;
+                }
             }
         }
         return moves;
