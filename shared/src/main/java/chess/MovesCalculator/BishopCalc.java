@@ -28,9 +28,13 @@ public class BishopCalc {
                 ChessPosition newPosition = new ChessPosition(row, col);
                 ChessPiece target = board.getPiece(newPosition);
 
-                if(target == null){// make sure target space is empty
+                if(target == null){ // make sure target space is empty
                     moves.add (new ChessMove(myPosition, newPosition, null));
-                } else { // if not empty then stop
+                } else { // if not empty then stop or capture
+                    if(target.getTeamColor() != myPiece.getTeamColor()){//capture opponent piece
+                        moves.add(new ChessMove(myPosition, newPosition, null));
+                    }
+                    // stop
                     break;
                 }
             }

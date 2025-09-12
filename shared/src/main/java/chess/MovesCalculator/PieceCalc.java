@@ -16,7 +16,8 @@ public class PieceCalc {
                 return new BishopCalc().pieceMoves(board, myPosition);
             //case KING:
                 //return new KingCalc().pieceMoves(board, myPosition);
-
+            case ROOK:
+                return new RookCalc().pieceMoves(board, myPosition);
                 //other pieces
 
                 default:
