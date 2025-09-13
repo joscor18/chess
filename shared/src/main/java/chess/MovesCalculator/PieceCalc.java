@@ -22,7 +22,8 @@ public class PieceCalc {
                 return new KnightCalc().pieceMoves(board, myPosition);
             case QUEEN:
                 return new QueenCalc().pieceMoves(board, myPosition);
-            //case PAWN:
+            case PAWN:
+                return new PawnCalc().pieceMoves(board, myPosition);
 
                 default:
                 return List.of();
