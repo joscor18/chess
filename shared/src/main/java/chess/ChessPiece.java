@@ -64,6 +64,8 @@ public class ChessPiece {
                 return new RookCalc().pieceMoves(board, myPosition);
             case KNIGHT:
                 return new KnightCalc().pieceMoves(board, myPosition);
+            case QUEEN:
+                return new QueenCalc().pieceMoves(board, myPosition);
 
             default:
                 return List.of();

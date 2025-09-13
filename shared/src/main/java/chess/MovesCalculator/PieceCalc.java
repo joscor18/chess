@@ -20,6 +20,9 @@ public class PieceCalc {
                 return new RookCalc().pieceMoves(board, myPosition);
             case KNIGHT:
                 return new KnightCalc().pieceMoves(board, myPosition);
+            case QUEEN:
+                return new QueenCalc().pieceMoves(board, myPosition);
+
                 //other pieces
 
                 default:
