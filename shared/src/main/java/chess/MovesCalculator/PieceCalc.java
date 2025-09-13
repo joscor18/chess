@@ -14,16 +14,15 @@ public class PieceCalc {
         switch (piece.getPieceType()){
             case BISHOP:
                 return new BishopCalc().pieceMoves(board, myPosition);
-            //case KING:
-                //return new KingCalc().pieceMoves(board, myPosition);
+            case KING:
+                return new KingCalc().pieceMoves(board, myPosition);
             case ROOK:
                 return new RookCalc().pieceMoves(board, myPosition);
             case KNIGHT:
                 return new KnightCalc().pieceMoves(board, myPosition);
             case QUEEN:
                 return new QueenCalc().pieceMoves(board, myPosition);
-
-                //other pieces
+            //case PAWN:
 
                 default:
                 return List.of();
