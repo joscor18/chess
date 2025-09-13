@@ -34,7 +34,17 @@ public class PawnCalc {
         }
 
         // can move diagnal if going to capture
-
+        int[][] offsets = {{direction,-1}, {direction,1}}; // based on color
+        for (int[] offset : offsets){
+            int row1 = myPosition.getRow() + offset[0];
+            int col1 = myPosition.getColumn() + offset[1];
+            if (board.inBounds(row1, col1)){
+                ChessPiece target = board.getPiece(new ChessPosition(row1, col1));
+                if(target != null && target.getTeamColor() != myPiece.getTeamColor()){
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row1, col1),null));
+                }
+            }
+        }
 
     return moves;
     }
