@@ -6,20 +6,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class PawnCalc {
-
+    private void promotions(Collection<ChessMove> moves, ChessPosition start, ChessPosition end){
+        int targetRow = end.getRow();
+        if(targetRow == 8 || targetRow == 1){
+            moves.add(new ChessMove(start, end,ChessPiece.PieceType.QUEEN));
+            moves.add(new ChessMove(start, end,ChessPiece.PieceType.ROOK));
+            moves.add(new ChessMove(start, end,ChessPiece.PieceType.BISHOP));
+            moves.add(new ChessMove(start, end,ChessPiece.PieceType.KNIGHT));
+        } else{
+            moves.add(new ChessMove(start, end, null));
+        }
+    }
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>(); // list to collect
         ChessPiece myPiece = board.getPiece(myPosition);
 
         //get the team color for direction
-        int direction = (myPiece.getTeamColor() == ChessGame.TeamColor.WHITE) ? 1 : -1; //can always move 1 forward
+        int direction = (myPiece.getTeamColor() == ChessGame.TeamColor.WHITE) ? 1 : -1;
 
+        //can always move 1 forward
         int row = myPosition.getRow() + direction;
         int col = myPosition.getColumn();
-
-        //figure out promotion
         if (board.inBounds(row, col) && board.getPiece(new ChessPosition(row, col)) == null) {
-            moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+            promotions(moves, myPosition, new ChessPosition(row, col));
         }
 
         //can move 1 or 2 if first move
@@ -41,7 +50,7 @@ public class PawnCalc {
             if (board.inBounds(row1, col1)){
                 ChessPiece target = board.getPiece(new ChessPosition(row1, col1));
                 if(target != null && target.getTeamColor() != myPiece.getTeamColor()){
-                    moves.add(new ChessMove(myPosition, new ChessPosition(row1, col1),null));
+                    promotions(moves, myPosition, new ChessPosition(row1, col1));
                 }
             }
         }
