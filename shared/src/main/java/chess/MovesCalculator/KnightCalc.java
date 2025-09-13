@@ -17,7 +17,24 @@ public class KnightCalc {
         Collection<ChessMove> moves = new ArrayList<>();
         ChessPiece myPiece = board.getPiece(myPosition);
 
-        // not recursive just indexing the offsets
+        for (int[] offset : offsets){
+            int row = myPosition.getRow() + offset[0];
+            int col = myPosition.getColumn() + offset[1];
+
+            if (!board.inBounds(row, col)) break;
+
+            ChessPosition newPosition = new ChessPosition(row, col);
+            ChessPiece target = board.getPiece(newPosition);
+
+            if(target == null){
+                moves.add(new ChessMove(myPosition, newPosition, null));
+            }else{
+                if(target.getTeamColor() != myPiece.getTeamColor()){
+                    moves.add((new ChessMove(myPosition, newPosition, null)));
+                }
+                break;
+            }
+        }
 
         return moves;
     }
