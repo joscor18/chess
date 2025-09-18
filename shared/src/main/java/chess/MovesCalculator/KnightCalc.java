@@ -26,12 +26,9 @@ public class KnightCalc {
             ChessPosition newPosition = new ChessPosition(row, col);
             ChessPiece target = board.getPiece(newPosition);
 
-            if(target == null){
+            if(target == null || target.getTeamColor() != myPiece.getTeamColor()){
                 moves.add(new ChessMove(myPosition, newPosition, null));
-            }else{// stop or capture
-                if(target.getTeamColor() != myPiece.getTeamColor()) {
-                    moves.add((new ChessMove(myPosition, newPosition, null)));
-                } // don't need to break after
+                // don't need to break after
             }
         }
 
