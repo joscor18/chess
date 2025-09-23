@@ -42,11 +42,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        for(int row = 0; row < 8; row++){ // clear the board
-            for (int col = 0; col < 8; col++){
-                squares[row][col] = null;
-            }
-        }
+        ChessPiece[][] defaultboard = new ChessPiece[8][8];
 
         ChessPiece.PieceType[] restoreBack = { // back row order
                 ChessPiece.PieceType.ROOK,
@@ -59,18 +55,14 @@ public class ChessBoard {
                 ChessPiece.PieceType.ROOK
         };
 
-        for (int col = 1; col <= 8; col++){ // white pieces
-            addPiece(new ChessPosition(1, col), new ChessPiece(ChessGame.TeamColor.WHITE, restoreBack[col-1]));
-
-            addPiece(new ChessPosition(2, col), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        for (int col = 0; col < 8; col++){ // white pieces and black pieces
+            defaultboard[0][col] = new ChessPiece(ChessGame.TeamColor.WHITE, restoreBack[col]);
+            defaultboard[1][col] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+            defaultboard[7][col] = new ChessPiece(ChessGame.TeamColor.BLACK, restoreBack[col]);
+            defaultboard[6][col] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
         }
 
-        for (int col = 1; col <= 8; col++){ // black pieces
-            addPiece(new ChessPosition(8, col), new ChessPiece(ChessGame.TeamColor.BLACK, restoreBack[col-1]));
-
-            addPiece(new ChessPosition(7, col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
-        }
-
+        squares = defaultboard;
     }
 
     /**
