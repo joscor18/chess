@@ -17,6 +17,7 @@ public class PawnCalc {
             moves.add(new ChessMove(start, end, null));
         }
     }
+
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>(); // list to collect
         ChessPiece myPiece = board.getPiece(myPosition);

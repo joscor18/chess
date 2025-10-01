@@ -72,6 +72,8 @@ public class ChessBoard {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
