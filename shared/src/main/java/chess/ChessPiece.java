@@ -59,15 +59,15 @@ public class ChessPiece {
         ChessPiece piece = board.getPiece(myPosition);
         switch (piece.getPieceType()){
             case BISHOP:
-                return new BishopCalc().pieceMoves(board,myPosition);
+                return new RecurseCalc().pieceMoves(board,myPosition);
             case KING:
                 return new KingCalc().pieceMoves(board, myPosition);
             case ROOK:
-                return new RookCalc().pieceMoves(board, myPosition);
+                return new RecurseCalc().pieceMoves(board, myPosition);
             case KNIGHT:
                 return new KnightCalc().pieceMoves(board, myPosition);
             case QUEEN:
-                return new QueenCalc().pieceMoves(board, myPosition);
+                return new RecurseCalc().pieceMoves(board, myPosition);
             case PAWN:
                 return new PawnCalc().pieceMoves(board, myPosition);
             default:
