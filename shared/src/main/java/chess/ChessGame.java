@@ -81,6 +81,7 @@ public class ChessGame {
                 boardCopy.addPiece(move.getStartPosition(), null);
                 boardCopy.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(), move.getPromotionPiece()));
             }else{
+                boardCopy.addPiece(move.getStartPosition(), null);
                 boardCopy.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(),myPiece.getPieceType()));
             }
 
@@ -273,6 +274,7 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
 
 
     @Override
