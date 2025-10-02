@@ -54,21 +54,41 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         //get piece
         ChessPiece myPiece = board.getPiece(startPosition);
+        if(myPiece == null){
+            return new ArrayList<>();
+        }
 
         //check moves
         Collection<ChessMove> allMoves = myPiece.pieceMoves(board, startPosition);
         //create valid moves list
         Collection<ChessMove> validMoves = new ArrayList<>();
         for (ChessMove move : allMoves){
+            ChessBoard boardCopy = new ChessBoard();
+
+            for(int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    ChessPosition myPos = new ChessPosition(row, col);
+                    ChessPiece piece = board.getPiece(myPos);
+                    if (piece != null) {
+                        boardCopy.addPiece(myPos, new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                    }
+                }
+            }
+
+
             //promote if needed
             if(myPiece.getPieceType() == ChessPiece.PieceType.PAWN && (move.getEndPosition().getRow() == 1 || move.getEndPosition().getRow() == 8)){
                 board.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(), move.getPromotionPiece()));
+            }else{
+                boardCopy.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(),myPiece.getPieceType()));
             }
 
             //make sure king not in check
-
-
-
+            ChessGame test = new ChessGame();
+            test.setBoard(boardCopy);
+            if(!test.isInCheck(myPiece.getTeamColor())){
+                validMoves.add(move);
+            }
         }
         return validMoves;
     }
@@ -85,9 +105,14 @@ public class ChessGame {
         ChessPosition end = move.getEndPosition();
         ChessPiece myPiece = myBoard.getPiece(start);
 
+
         if(myPiece == null){
             throw new InvalidMoveException("No piece at " + start);
         }
+
+//        if(myPiece.getTeamColor() != currentTurn){
+//            throw new InvalidMoveException("It's not this teams turn");
+//        }
 
         if(isInCheck(myPiece.getTeamColor())){
             throw new InvalidMoveException("King is in Check");
@@ -99,12 +124,16 @@ public class ChessGame {
         }
 
         ChessPiece isCaptured = myBoard.getPiece(end);
+
         myBoard.addPiece(end,myPiece);
         if(isInCheck(myPiece.getTeamColor())){
             myBoard.addPiece(start,myPiece);
             if(isCaptured != null){ myBoard.addPiece(end, isCaptured);}
             throw new InvalidMoveException("Makes king in check");
         }
+
+        //change team turn
+        currentTurn = (currentTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
     }
 
