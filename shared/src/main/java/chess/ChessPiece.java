@@ -61,11 +61,11 @@ public class ChessPiece {
             case BISHOP:
                 return new RecurseCalc().pieceMoves(board,myPosition);
             case KING:
-                return new KingCalc().pieceMoves(board, myPosition);
+                return new ContCalc().pieceMoves(board, myPosition);
             case ROOK:
                 return new RecurseCalc().pieceMoves(board, myPosition);
             case KNIGHT:
-                return new KnightCalc().pieceMoves(board, myPosition);
+                return new ContCalc().pieceMoves(board, myPosition);
             case QUEEN:
                 return new RecurseCalc().pieceMoves(board, myPosition);
             case PAWN:

@@ -8,14 +8,29 @@ import chess.ChessPosition;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class KnightCalc {
-    private final int[][] offsets = { //not recursive directions
+public class ContCalc {
+    private final int[][] knightOffsets = { //not recursive directions
             {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1}, {-2,-1}, {-1,-2}, {1,-2}
+    };
+    private final int [][] kingOffsets = {
+            {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1}
     };
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>(); // list to collect
         ChessPiece myPiece = board.getPiece(myPosition);
+
+        int[][] offsets;
+        switch (myPiece.getPieceType()){
+            case KING:
+                offsets = kingOffsets;
+                break;
+            case KNIGHT:
+                offsets = knightOffsets;
+                break;
+            default:
+                return moves;
+        }
 
         for (int[] offset : offsets){ // check locations
             int row = myPosition.getRow() + offset[0];

@@ -14,7 +14,6 @@ public class RecurseCalc {
     };
     private final int[][] bishopDirections = {
             {1,1}, {1,-1}, {-1, 1}, {-1,-1} // get general directions not all steps
-
     };
     private static int[][] queenDirections = {
             {1,0}, {0,1}, {-1,0}, {0,-1}, {1,1}, {1,-1}, {-1, 1}, {-1,-1}
