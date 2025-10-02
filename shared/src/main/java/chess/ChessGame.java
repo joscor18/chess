@@ -78,7 +78,8 @@ public class ChessGame {
 
             //promote if needed
             if(myPiece.getPieceType() == ChessPiece.PieceType.PAWN && (move.getEndPosition().getRow() == 1 || move.getEndPosition().getRow() == 8)){
-                board.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(), move.getPromotionPiece()));
+                boardCopy.addPiece(move.getStartPosition(), null);
+                boardCopy.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(), move.getPromotionPiece()));
             }else{
                 boardCopy.addPiece(move.getEndPosition(), new ChessPiece(myPiece.getTeamColor(),myPiece.getPieceType()));
             }
@@ -110,9 +111,9 @@ public class ChessGame {
             throw new InvalidMoveException("No piece at " + start);
         }
 
-//        if(myPiece.getTeamColor() != currentTurn){
-//            throw new InvalidMoveException("It's not this teams turn");
-//        }
+        if(myPiece.getTeamColor() != currentTurn){
+            throw new InvalidMoveException("It's not this teams turn");
+        }
 
         if(isInCheck(myPiece.getTeamColor())){
             throw new InvalidMoveException("King is in Check");
@@ -125,7 +126,19 @@ public class ChessGame {
 
         ChessPiece isCaptured = myBoard.getPiece(end);
 
-        myBoard.addPiece(end,myPiece);
+        myBoard.addPiece(start, null);
+
+        if(myPiece.getPieceType() == ChessPiece.PieceType.PAWN && (end.getRow() == 1 || end.getRow() == 8)){
+            ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
+            if(promotionPiece == null){
+                promotionPiece = ChessPiece.PieceType.QUEEN;
+            }
+            myBoard.addPiece(end, new ChessPiece(myPiece.getTeamColor(),promotionPiece));
+        }else{
+            myBoard.addPiece(end,myPiece);
+        }
+
+
         if(isInCheck(myPiece.getTeamColor())){
             myBoard.addPiece(start,myPiece);
             if(isCaptured != null){ myBoard.addPiece(end, isCaptured);}
