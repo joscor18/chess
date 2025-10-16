@@ -36,7 +36,7 @@ public class Server {
             //var res = Map.of("username", req.get("username"), "authToken", "yzx");
             ctx.result(serializer.toJson(authData));
         } catch (Exception ex){
-            var msg = String.format("\"message\": ");
+            var msg = String.format("\"message\": \"Error: already taken\" ");
             ctx.status(403).result(msg);
         }
     }
