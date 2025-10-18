@@ -19,4 +19,15 @@ class UserServiceTest {
         assertEquals(user.username(), authData.username());
         assertTrue(!authData.authtoken().isEmpty());
     }
+
+    @Test
+    void registerInvalidUsername()throws Exception {
+        DataAccess db = new MemoryDataAccess();
+        var user = new UserData(null,"j@j.com","toomanysecrets");
+        var userService = new UserService(db);
+        var authData = userService.register(user);
+        assertNotNull(authData);
+        assertEquals(user.username(), authData.username());
+        assertTrue(!authData.authtoken().isEmpty());
+    }
 }
