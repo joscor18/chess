@@ -32,6 +32,12 @@ public class Server {
             String reqJson = ctx.body();
             var user = serializer.fromJson(reqJson, UserData.class);
 
+            if(user.username() == null || user.password() == null || user.email() == null){
+                var msg = Map.of("message", "Error: bad request");
+                ctx.status(400).result(serializer.toJson(msg));
+                return;
+            }
+
             //call to the service and register
             var authData = userService.register(user);
 
@@ -49,11 +55,18 @@ public class Server {
             String reqJson = ctx.body();
             var user = serializer.fromJson(reqJson, UserData.class);
 
+            if(user.username() == null || user.password() == null){
+                throw new IllegalArgumentException("bad request");
+            }
+
             //Check user
             var existUser = userService.login(user);
 
             ctx.result(serializer.toJson(existUser));
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
+            var msg = Map.of("message", "Error: " + ex.getMessage());
+            ctx.status(400).result(serializer.toJson(msg));
+        } catch(Exception ex){
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(401).result(serializer.toJson(msg));
         }
@@ -63,11 +76,17 @@ public class Server {
         var serializer = new Gson();
         try{
             var authToken = ctx.header("Authorization");
+            if(authToken == null){
+                throw new IllegalArgumentException("unauthorized");
+            }
             userService.logout(authToken);
             ctx.result("{}");
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(401).result(serializer.toJson(msg));
+        } catch(Exception ex){
+            var msg = Map.of("message", "Error: " + ex.getMessage());
+            ctx.status(400).result(serializer.toJson(msg));
         }
     }
 
