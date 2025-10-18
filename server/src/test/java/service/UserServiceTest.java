@@ -17,7 +17,7 @@ class UserServiceTest {
         var authData = userService.register(user);
         assertNotNull(authData);
         assertEquals(user.username(), authData.username());
-        assertTrue(!authData.authtoken().isEmpty());
+        assertTrue(!authData.authToken().isEmpty());
     }
 
     @Test
@@ -28,6 +28,6 @@ class UserServiceTest {
         var authData = userService.register(user);
         assertNotNull(authData);
         assertEquals(user.username(), authData.username());
-        assertTrue(!authData.authtoken().isEmpty());
+        assertTrue(!authData.authToken().isEmpty());
     }
 }

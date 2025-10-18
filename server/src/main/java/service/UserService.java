@@ -7,16 +7,26 @@ import datamodel.UserData;
 import javax.xml.crypto.Data;
 
 public class UserService {
+
     private final DataAccess dataAccess;
 
     public UserService(DataAccess dataAccess){
         this.dataAccess = dataAccess;
     }
+
     public AuthData register(UserData user) throws Exception {
         if(dataAccess.getUser(user.username()) != null){
-            throw new Exception("already exists");
+            throw new Exception("already taken");
         }
         dataAccess.createUser(user);
+        var authData = new AuthData(user.username(), genAuthToken());
+        return authData;
+    }
+
+    public AuthData login(UserData user)throws Exception{
+        if(dataAccess.getUser(user.username()) == null || !dataAccess.getUser(user.username()).password().equals(user.password())){
+            throw new Exception("unauthorized");
+        }
         var authData = new AuthData(user.username(), genAuthToken());
         return authData;
     }

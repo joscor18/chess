@@ -23,10 +23,11 @@ public class Server {
         server.delete("db",ctx -> ctx.result("{}"));
         server.post("user", this::register);
 
+        server.post("session", this:: login);
     }
     private void register(Context ctx){
+        var serializer = new Gson();
         try {
-            var serializer = new Gson();
             String reqJson = ctx.body();
             var user = serializer.fromJson(reqJson, UserData.class);
 
@@ -36,9 +37,24 @@ public class Server {
             //var res = Map.of("username", req.get("username"), "authToken", "yzx");
             ctx.result(serializer.toJson(authData));
         } catch (Exception ex){
-            var serializer = new Gson();
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(403).result(serializer.toJson(msg));
+        }
+    }
+
+    private void login(Context ctx){
+        var serializer = new Gson();
+        try{
+            String reqJson = ctx.body();
+            var user = serializer.fromJson(reqJson, UserData.class);
+
+            //Check user
+            var existUser = userService.login(user);
+
+            ctx.result(serializer.toJson(existUser));
+        } catch (Exception ex) {
+            var msg = Map.of("message", "Error: " + ex.getMessage());
+            ctx.status(401).result(serializer.toJson(msg));
         }
     }
 
