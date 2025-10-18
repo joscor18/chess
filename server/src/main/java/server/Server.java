@@ -24,6 +24,7 @@ public class Server {
         server.post("user", this::register);
 
         server.post("session", this:: login);
+        server.delete("session", this::logout);
     }
     private void register(Context ctx){
         var serializer = new Gson();
@@ -52,6 +53,18 @@ public class Server {
             var existUser = userService.login(user);
 
             ctx.result(serializer.toJson(existUser));
+        } catch (Exception ex) {
+            var msg = Map.of("message", "Error: " + ex.getMessage());
+            ctx.status(401).result(serializer.toJson(msg));
+        }
+    }
+
+    private void logout(Context ctx){
+        var serializer = new Gson();
+        try{
+            var authToken = ctx.header("Authorization");
+            userService.logout(authToken);
+            ctx.result("{}");
         } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(401).result(serializer.toJson(msg));

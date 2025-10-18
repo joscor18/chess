@@ -5,6 +5,7 @@ import datamodel.AuthData;
 import datamodel.UserData;
 
 import javax.xml.crypto.Data;
+import java.util.UUID;
 
 public class UserService {
 
@@ -20,6 +21,7 @@ public class UserService {
         }
         dataAccess.createUser(user);
         var authData = new AuthData(user.username(), genAuthToken());
+        dataAccess.createAuth(authData);
         return authData;
     }
 
@@ -28,11 +30,19 @@ public class UserService {
             throw new Exception("unauthorized");
         }
         var authData = new AuthData(user.username(), genAuthToken());
+        dataAccess.createAuth(authData);
         return authData;
     }
 
+    public void logout(String authToken)throws Exception{
+        if(dataAccess.getAuth(authToken) == null ){
+            throw new Exception("unauthorized");
+        }
+        dataAccess.deleteAuth(authToken);
+    }
+
     private String genAuthToken(){
-        return "xyz";
+        return UUID.randomUUID().toString();
     }
 
 }
