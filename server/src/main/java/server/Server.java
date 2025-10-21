@@ -20,7 +20,7 @@ public class Server {
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
-        server.delete("db",ctx -> ctx.result("{}"));
+        server.delete("db",ctx -> {dataAccess.clear(); ctx.result("{}");});
         server.post("user", this::register);
 
         server.post("session", this:: login);
@@ -58,7 +58,6 @@ public class Server {
             if(user.username() == null || user.password() == null){
                 throw new IllegalArgumentException("bad request");
             }
-
             //Check user
             var existUser = userService.login(user);
 
@@ -76,17 +75,12 @@ public class Server {
         var serializer = new Gson();
         try{
             var authToken = ctx.header("Authorization");
-            if(authToken == null){
-                throw new IllegalArgumentException("unauthorized");
-            }
             userService.logout(authToken);
             ctx.result("{}");
-        } catch (IllegalArgumentException ex) {
+
+        } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(401).result(serializer.toJson(msg));
-        } catch(Exception ex){
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            ctx.status(400).result(serializer.toJson(msg));
         }
     }
 
