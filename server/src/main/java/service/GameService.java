@@ -48,7 +48,7 @@ public class GameService {
                 if(game.blackUsername() != null){
                     throw new Exception("already taken");
                 }
-                game = new GameData(game.gameID(), game.gameName(), authData.username(), game.whiteUsername(),game.game());
+                game = new GameData(game.gameID(), game.gameName(), game.whiteUsername() ,authData.username(),game.game());
             }else {
                 throw new Exception("bad request");
             }

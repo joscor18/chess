@@ -142,14 +142,30 @@ public class Server {
 
             String reqJson = ctx.body();
             var joinreq = serializer.fromJson(reqJson, Map.class);
+            if(joinreq == null || !joinreq.containsKey("gameID")){
+                var msg = Map.of("message", "Error: bad request");
+                ctx.status(400).result(serializer.toJson(msg));
+                return;
+            }
+
+            var playerColor = joinreq.get("playerColor");
+            var stringPlayerColor = (String)playerColor;
+            if(stringPlayerColor == null){
+                var msg = Map.of("message", "Error: bad request");
+                ctx.status(400).result(serializer.toJson(msg));
+                return;
+                
+            }
+            
+            if(!stringPlayerColor.equalsIgnoreCase("white") && !stringPlayerColor.equalsIgnoreCase("black")){
+                var msg = Map.of("message", "Error: bad request");
+                ctx.status(400).result(serializer.toJson(msg));
+                return;
+            }
 
             var gameId = joinreq.get("gameID");
-            var playerColor = joinreq.get("playerColor");
-
             int gameIdCast = ((Number)gameId).intValue();
-
-            gameService.joinGame(authToken, (String) playerColor, (Integer) gameIdCast);
-
+            gameService.joinGame(authToken, stringPlayerColor, gameIdCast);
             ctx.result("{}");
         } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
