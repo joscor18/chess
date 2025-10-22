@@ -4,7 +4,9 @@ import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MemoryDataAccess implements DataAccess{
 
@@ -62,6 +64,16 @@ public class MemoryDataAccess implements DataAccess{
     @Override
     public HashMap<Integer, GameData> listGames() {
         return games;
+    }
+
+    @Override
+    public void updateGame(GameData game) {
+        games.put(game.gameID(), game);
+    }
+
+    @Override
+    public List<GameData> getGames() {
+        return new ArrayList<>(games.values());
     }
 
 

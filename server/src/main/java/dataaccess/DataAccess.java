@@ -4,6 +4,7 @@ package dataaccess;
 import datamodel.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 public interface DataAccess {
     void clear();
@@ -15,4 +16,6 @@ public interface DataAccess {
     GameData createGame(GameData game);
     GameData getGame(int gameId);
     HashMap<Integer, GameData> listGames();
+    void updateGame(GameData game);
+    List<GameData> getGames();
 }

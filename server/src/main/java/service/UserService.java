@@ -41,13 +41,6 @@ public class UserService {
         dataAccess.deleteAuth(authToken);
     }
 
-    public void list(String authToken)throws Exception{
-        if(dataAccess.getAuth(authToken) == null ){
-            throw new Exception("unauthorized");
-        }
-        dataAccess.deleteAuth(authToken);
-    }
-
 
     private String genAuthToken(){
         return UUID.randomUUID().toString();

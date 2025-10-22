@@ -33,6 +33,7 @@ public class Server {
         server.delete("session", this::logout);
 
         server.post("game", this::createGame);
+        server.put("game", this::joinGame);
         server.get("game",this::list);
     }
     private void register(Context ctx){
@@ -97,8 +98,9 @@ public class Server {
         var serializer = new Gson();
         try{
             var authToken = ctx.header("Authorization");
-            userService.logout(authToken);
-            ctx.result("{}");
+            var games = gameService.list(authToken);
+            var req = Map.of("games", games);
+            ctx.result(serializer.toJson(req));
 
         } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
@@ -130,6 +132,37 @@ public class Server {
                 ctx.status(500).result(serializer.toJson(msg));
             }
 
+        }
+    }
+
+    private void joinGame(Context ctx){
+        var serializer = new Gson();
+        try{
+            var authToken = ctx.header("Authorization");
+
+            String reqJson = ctx.body();
+            var joinreq = serializer.fromJson(reqJson, Map.class);
+
+            var gameId = joinreq.get("gameID");
+            var playerColor = joinreq.get("playerColor");
+
+            int gameIdCast = ((Number)gameId).intValue();
+
+            gameService.joinGame(authToken, (String) playerColor, (Integer) gameIdCast);
+
+            ctx.result("{}");
+        } catch (Exception ex) {
+            var msg = Map.of("message", "Error: " + ex.getMessage());
+            String mess = ex.getMessage().toLowerCase();
+            if(mess.contains("unauthorized")){
+                ctx.status(401).result(serializer.toJson(msg));
+            }else if (mess.contains("bad request")){
+                ctx.status(400).result(serializer.toJson(msg));
+            }else if (mess.contains("already taken")) {
+                ctx.status(403).result(serializer.toJson(msg));
+            }else{
+                ctx.status(500).result(serializer.toJson(msg));
+            }
         }
     }
 
