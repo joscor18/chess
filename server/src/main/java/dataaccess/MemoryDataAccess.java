@@ -62,11 +62,6 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public HashMap<Integer, GameData> listGames() {
-        return games;
-    }
-
-    @Override
     public void updateGame(GameData game) {
         games.put(game.gameID(), game);
     }
