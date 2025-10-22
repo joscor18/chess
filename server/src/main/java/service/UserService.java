@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.AuthData;
 import datamodel.UserData;
 
@@ -27,7 +28,7 @@ public class UserService {
 
     public AuthData login(UserData user)throws Exception{
         if(dataAccess.getUser(user.username()) == null || !dataAccess.getUser(user.username()).password().equals(user.password())){
-            throw new Exception("unauthorized");
+            throw new DataAccessException("unauthorized");
         }
         var authData = new AuthData(user.username(), genAuthToken());
         dataAccess.createAuth(authData);
@@ -36,7 +37,7 @@ public class UserService {
 
     public void logout(String authToken)throws Exception{
         if(dataAccess.getAuth(authToken) == null ){
-            throw new Exception("unauthorized");
+            throw new DataAccessException("unauthorized");
         }
         dataAccess.deleteAuth(authToken);
     }

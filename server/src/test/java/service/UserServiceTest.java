@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import datamodel.AuthData;
 import datamodel.UserData;
@@ -33,6 +34,32 @@ class UserServiceTest {
     }
 
     @Test
+    void loginSuccess()throws Exception{
+        DataAccess db = new MemoryDataAccess();
+        var userService = new UserService(db);
+        var user = new UserData("joe", "j@j.com", "toomanysecrets");
+        db.createUser(user);
+        AuthData authData = userService.login(user);
+        var res = db.getAuth(authData.authToken());
+        assertNotNull(authData);
+        assertEquals("joe",authData.username());
+        assertNotNull(authData.authToken());
+        assertEquals(authData,res);
+    }
+
+    @Test
+    void loginFails() {
+        DataAccess db = new MemoryDataAccess();
+        var userService = new UserService(db);
+        var user = new UserData("joe", "j@j.com", "toomanysecrets");
+        db.createUser(user);
+        var bad = new UserData("moe", null, "wrong");
+        assertThrows(DataAccessException.class, ()->{userService.login(bad);});
+
+    }
+
+
+    @Test
     void logoutSuccess()throws Exception{
         DataAccess db = new MemoryDataAccess();
         var userService = new UserService(db);
@@ -47,8 +74,11 @@ class UserServiceTest {
     void logoutFails() {
         DataAccess db = new MemoryDataAccess();
         var userService = new UserService(db);
+        AuthData authData = new AuthData("user", "token");
+        db.createAuth(authData);
         String bad = "anotherTest";
-        assertNull(db.getAuth(bad));
+        assertThrows(DataAccessException.class, ()->userService.logout(bad));
+        assertNotNull(db.getAuth(authData.authToken()));
 
     }
 }
