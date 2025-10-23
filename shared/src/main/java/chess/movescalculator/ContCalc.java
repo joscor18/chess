@@ -1,4 +1,4 @@
-package chess.MovesCalculator;
+package chess.movescalculator;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -36,7 +36,9 @@ public class ContCalc {
             int row = myPosition.getRow() + offset[0];
             int col = myPosition.getColumn() + offset[1];
 
-            if (!board.inBounds(row, col)) continue; // continue to skip those instead of exit out entirely
+            if (!board.inBounds(row, col)) {
+                continue; // continue to skip those instead of exit out entirely
+            }
 
             ChessPosition newPosition = new ChessPosition(row, col);
             ChessPiece target = board.getPiece(newPosition);

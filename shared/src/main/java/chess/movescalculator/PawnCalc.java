@@ -1,4 +1,4 @@
-package chess.MovesCalculator;
+package chess.movescalculator;
 
 import chess.*;
 
@@ -38,7 +38,9 @@ public class PawnCalc {
         if(myPosition.getRow() == starting){
             int onemove = myPosition.getRow() + direction;
             int twomoves = myPosition.getRow() + 2*direction;
-            if(board.inBounds(twomoves,col) && board.getPiece(new ChessPosition(onemove, col)) == null && board.getPiece(new ChessPosition(twomoves, col)) == null){
+            if(board.inBounds(twomoves,col)
+                    && board.getPiece(new ChessPosition(onemove, col)) == null
+                    && board.getPiece(new ChessPosition(twomoves, col)) == null){
                 moves.add(new ChessMove(myPosition, new ChessPosition(twomoves, col),null));
             }
         }

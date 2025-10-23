@@ -1,4 +1,4 @@
-package chess.MovesCalculator;
+package chess.movescalculator;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -46,7 +46,9 @@ public class RecurseCalc {
                 row += direction[0];
                 col += direction[1];
 
-                if (!board.inBounds(row, col)) break; // confirm in bounds
+                if (!board.inBounds(row, col)) {
+                    break; // confirm in bounds
+                }
 
                 ChessPosition newPosition = new ChessPosition(row, col);
                 ChessPiece target = board.getPiece(newPosition);

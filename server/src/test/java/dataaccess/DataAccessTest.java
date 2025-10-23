@@ -28,7 +28,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getUser_success() {
+    void getUsersuccess() {
         DataAccess db = new MemoryDataAccess();
         var user = new UserData("joe","j@j.com","toomanysecrets");
         db.createUser(user);
@@ -38,14 +38,14 @@ class DataAccessTest {
     }
 
     @Test
-    void getUser_fail() {
+    void getUserfail() {
         DataAccess db = new MemoryDataAccess();
         var res = db.getUser("non");
         assertNull(res);
     }
 
     @Test
-    void getAuth_Success(){
+    void getAuthSuccess(){
         DataAccess db = new MemoryDataAccess();
         AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
@@ -56,7 +56,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getAuth_fail(){
+    void getAuthfail(){
         DataAccess db = new MemoryDataAccess();
         var res = db.getAuth("non");
 
