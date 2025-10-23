@@ -42,16 +42,16 @@ public class GameService {
         if(playerColor != null){
             if(playerColor.equalsIgnoreCase("White")){
                 if(game.whiteUsername() != null){
-                    throw new Exception("already taken");
+                    throw new DataAccessException("already taken");
                 }
                 game = new GameData(game.gameID(), game.gameName(), authData.username(), game.blackUsername(),game.game());
             }else if(playerColor.equalsIgnoreCase("Black")){
                 if(game.blackUsername() != null){
-                    throw new Exception("already taken");
+                    throw new DataAccessException("already taken");
                 }
                 game = new GameData(game.gameID(), game.gameName(), game.whiteUsername() ,authData.username(),game.game());
             }else {
-                throw new Exception("bad request");
+                throw new DataAccessException("bad request");
             }
             dataAccess.updateGame(game);
         }
@@ -60,7 +60,7 @@ public class GameService {
     public List<GameData> list(String authToken) throws Exception{
         AuthData authData = dataAccess.getAuth(authToken);
         if(authData == null){
-            throw new Exception("unauthorized");
+            throw new DataAccessException("unauthorized");
         }
         return dataAccess.getGames();
     }
