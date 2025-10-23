@@ -28,7 +28,20 @@ class GameServiceTest {
     }
 
     @Test
-    void createGameFail() {
+    void createGameFailBad() {
+        DataAccess db = new MemoryDataAccess();
+        var gameService = new GameService(db);
+        var user = new UserData("joe", "j@j.com", "toomanysecrets");
+        db.createUser(user);
+        AuthData authData = new AuthData(user.username(), "token");
+        db.createAuth(authData);
+        var non = "";
+        Exception ex = assertThrows(DataAccessException.class, ()-> gameService.createGame(authData.authToken(), non));
+        assertTrue(ex.getMessage().toLowerCase().contains("bad request"));
+    }
+
+    @Test
+    void createGameFailAuth() {
         DataAccess db = new MemoryDataAccess();
         var gameService = new GameService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
@@ -37,11 +50,8 @@ class GameServiceTest {
         var name = "test";
         AuthData authData = new AuthData(user.username(), "token");
         db.createAuth(authData);
-        var non = "";
         Exception ex = assertThrows(DataAccessException.class, ()-> gameService.createGame(bad,name));
         assertTrue(ex.getMessage().toLowerCase().contains("unauthorized"));
-        Exception nonex = assertThrows(DataAccessException.class, ()-> gameService.createGame(authData.authToken(), non));
-        assertTrue(nonex.getMessage().toLowerCase().contains("bad request"));
     }
 
     @Test
@@ -61,7 +71,7 @@ class GameServiceTest {
     }
 
     @Test
-    void joinGameFail() throws Exception{
+    void joinGameFailUnauth() throws Exception{
         DataAccess db = new MemoryDataAccess();
         var gameService = new GameService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
@@ -71,11 +81,25 @@ class GameServiceTest {
         var name = "test";
         GameData game = gameService.createGame(authData.authToken(),name);
         var bad = "invalid";
+        Exception ex = assertThrows(DataAccessException.class, ()-> gameService.joinGame(bad,"white", game.gameID()));
+        assertTrue(ex.getMessage().toLowerCase().contains("unauthorized"));
+    }
+
+    @Test
+    void joinGameFailBad() throws Exception{
+        DataAccess db = new MemoryDataAccess();
+        var gameService = new GameService(db);
+        var user = new UserData("joe", "j@j.com", "toomanysecrets");
+        db.createUser(user);
+        AuthData authData = new AuthData(user.username(), "token");
+        db.createAuth(authData);
+        var name = "test";
+        GameData game = gameService.createGame(authData.authToken(),name);
         Exception ex = assertThrows(DataAccessException.class, ()-> gameService.joinGame(authData.authToken(),"green", game.gameID()));
         assertTrue(ex.getMessage().toLowerCase().contains("bad request"));
-        Exception nonex = assertThrows(DataAccessException.class, ()-> gameService.joinGame(bad,"white", game.gameID()));
-        assertTrue(nonex.getMessage().toLowerCase().contains("unauthorized"));
     }
+
+
 
     @Test
     void listSuccess() throws Exception{
