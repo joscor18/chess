@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
@@ -19,10 +20,10 @@ public class GameService {
     public GameData createGame(String authToken, String gameName)throws Exception{
         AuthData authData = dataAccess.getAuth(authToken);
         if(authData == null){
-            throw new Exception("unauthorized");
+            throw new DataAccessException("unauthorized");
         }
-        if(gameName == null){
-            throw new Exception("bad request");
+        if(gameName == null || gameName.isBlank()){
+            throw new DataAccessException("bad request");
         }
         GameData game = new GameData(0, gameName,null,null,new ChessGame());
         return dataAccess.createGame(game);
@@ -31,12 +32,12 @@ public class GameService {
     public void joinGame(String authToken, String playerColor, int gameId) throws Exception{
         AuthData authData = dataAccess.getAuth(authToken);
         if(authData == null){
-            throw new Exception("unauthorized");
+            throw new DataAccessException("unauthorized");
         }
 
         var game = dataAccess.getGame(gameId);
         if(game == null){
-            throw new Exception("bad request");
+            throw new DataAccessException("bad request");
         }
         if(playerColor != null){
             if(playerColor.equalsIgnoreCase("White")){
