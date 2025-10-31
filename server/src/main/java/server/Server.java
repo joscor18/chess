@@ -2,7 +2,9 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import dataaccess.SqlDataAccess;
 import datamodel.GameData;
 import datamodel.UserData;
 import io.javalin.*;
@@ -19,22 +21,28 @@ public class Server {
     private final GameService gameService;
 
     public Server() {
-        var dataAccess = new MemoryDataAccess();
-        userService = new UserService(dataAccess);
-        gameService = new GameService(dataAccess);
+        try {
+            var dataAccess = new SqlDataAccess();
 
-        server = Javalin.create(config -> config.staticFiles.add("web"));
+            userService = new UserService(dataAccess);
+            gameService = new GameService(dataAccess);
 
-        // Register your endpoints and exception handlers here.
-        server.delete("db",ctx -> {dataAccess.clear(); ctx.result("{}");});
-        server.post("user", this::register);
+            server = Javalin.create(config -> config.staticFiles.add("web"));
 
-        server.post("session", this:: login);
-        server.delete("session", this::logout);
+            // Register your endpoints and exception handlers here.
+            server.delete("db",ctx -> {dataAccess.clear(); ctx.result("{}");});
+            server.post("user", this::register);
 
-        server.post("game", this::createGame);
-        server.put("game", this::joinGame);
-        server.get("game",this::list);
+            server.post("session", this:: login);
+            server.delete("session", this::logout);
+
+            server.post("game", this::createGame);
+            server.put("game", this::joinGame);
+            server.get("game",this::list);
+        }catch (DataAccessException ex){
+            throw new RuntimeException("Database failed",ex);
+        }
+
     }
     private void register(Context ctx){
         var serializer = new Gson();
