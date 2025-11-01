@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GameServiceTest {
 
     @Test
-    void createGameSuccess() {
+    void createGameSuccess() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var gameService = new GameService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
@@ -28,7 +28,7 @@ class GameServiceTest {
     }
 
     @Test
-    void createGameFailBad() {
+    void createGameFailBad() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var gameService = new GameService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
@@ -41,7 +41,7 @@ class GameServiceTest {
     }
 
     @Test
-    void createGameFailAuth() {
+    void createGameFailAuth() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var gameService = new GameService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");

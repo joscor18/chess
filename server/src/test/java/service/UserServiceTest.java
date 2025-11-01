@@ -48,7 +48,7 @@ class UserServiceTest {
     }
 
     @Test
-    void loginFails() {
+    void loginFails() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var userService = new UserService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
@@ -71,7 +71,7 @@ class UserServiceTest {
     }
 
     @Test
-    void logoutFails() {
+    void logoutFails() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var userService = new UserService(db);
         AuthData authData = new AuthData("user", "token");

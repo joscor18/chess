@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DataAccessTest {
 
     @Test
-    void clear() {
+    void clear() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         db.createUser(new UserData("joe","j@j.com","toomanysecrets"));
         db.clear();
@@ -20,7 +20,7 @@ class DataAccessTest {
     }
 
     @Test
-    void createUser() {
+    void createUser() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var user = new UserData("joe","j@j.com","toomanysecrets");
         db.createUser(user);
@@ -28,7 +28,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getUsersuccess() {
+    void getUsersuccess() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var user = new UserData("joe","j@j.com","toomanysecrets");
         db.createUser(user);
@@ -45,7 +45,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getAuthSuccess(){
+    void getAuthSuccess() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
@@ -64,7 +64,7 @@ class DataAccessTest {
     }
 
     @Test
-    void createAuth(){
+    void createAuth() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
@@ -73,7 +73,7 @@ class DataAccessTest {
     }
 
     @Test
-    void deleteAuth(){
+    void deleteAuth() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);

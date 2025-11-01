@@ -15,13 +15,22 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public void clear() {
-
+    public void clear() throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()){
+            try (var statement = conn.createStatement()){
+                statement.executeUpdate("TRUNCATE TABLE user");
+                statement.executeUpdate("TRUNCATE TABLE auth");
+                statement.executeUpdate("TRUNCATE TABLE game");
+            }
+        }catch (SQLException | DataAccessException ex){
+            throw new DataAccessException("",ex);
+        }
     }
 
     @Override
-    public void createUser(UserData user) {
-
+    public void createUser(UserData user) throws DataAccessException {
+        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(statement, user.username(), user.password(), user.email());
     }
 
     @Override
@@ -35,8 +44,9 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public void createAuth(AuthData auth) {
-
+    public void createAuth(AuthData auth) throws DataAccessException {
+        var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
+        executeUpdate(statement,auth.authToken(), auth.username());
     }
 
     @Override
@@ -64,54 +74,70 @@ public class SqlDataAccess implements DataAccess{
         return List.of();
     }
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (Connection conn = (Connection) DatabaseManager.getConnection()) {
+    private void executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    //else if (param instanceof PetType p) ps.setString(i + 1, p.toString());
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    switch (param) {
+                        case String p -> ps.setString(i + 1, p);
+                        case Integer p -> ps.setInt(i + 1, p);
+
+                        case null -> ps.setNull(i + 1, NULL);
+                        default -> {
+                        }
+                    }
                 }
                 ps.executeUpdate();
 
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    rs.getInt(1);
                 }
-
-                return 0;
             }
         } catch (SQLException ex) {
-            throw new DataAccessException("",ex);
+            throw new DataAccessException("SQL update failed: " + statement,ex);
         }
     }
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS  pet (
-              `id` int NOT NULL AUTO_INCREMENT,
-              `name` varchar(256) NOT NULL,
-              `type` ENUM('CAT', 'DOG', 'FISH', 'FROG', 'ROCK') DEFAULT 'CAT',
-              `json` TEXT DEFAULT NULL,
-              PRIMARY KEY (`id`),
-              INDEX(type),
-              INDEX(name)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            CREATE TABLE IF NOT EXISTS user (
+              `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL,
+              PRIMARY KEY (`username`)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS auth (
+              `authToken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS game (
+              gameID int NOT NULL AUTO_INCREMENT,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
+              `gameName` varchar(256) NOT NULL,
+              `gameJSON` TEXT,
+              PRIMARY KEY (`gameID`)
+            )
             """
     };
 
     private void configureDatabase() throws DataAccessException{
         DatabaseManager.createDatabase();
-        try(Connection conn = (Connection) DatabaseManager.getConnection()) {
+        try(Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createStatements){
                 try (var preparedStatement = conn.prepareStatement(statement)){
                     preparedStatement.executeUpdate();
                 }
             }
         }catch (SQLException ex){
-            throw new DataAccessException("",ex);
+            throw new DataAccessException("Database config failed",ex);
         }
     }
 }
