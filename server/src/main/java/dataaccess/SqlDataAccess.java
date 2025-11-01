@@ -7,6 +7,7 @@ import java.sql.*;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlDataAccess implements DataAccess{
@@ -23,7 +24,7 @@ public class SqlDataAccess implements DataAccess{
                 statement.executeUpdate("TRUNCATE TABLE game");
             }
         }catch (SQLException | DataAccessException ex){
-            throw new DataAccessException("",ex);
+            throw new DataAccessException("clear failed",ex);
         }
     }
 
@@ -34,12 +35,41 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException{
+        var statement = "SELECT username, password, email FROM user WHERE username =?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(statement);
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String user = rs.getString("username");
+                    String password = rs.getString("password");
+                    String email = rs.getString("email");
+                    return new UserData(user, password, email);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException("Unable to get user data: " + ex.getMessage(), ex);
+        }
         return null;
     }
 
     @Override
-    public AuthData getAuth(String authToken) {
+    public AuthData getAuth(String authToken) throws DataAccessException{
+        var statement = "SELECT username, authToken FROM auth WHERE authToken =?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(statement);
+            ps.setString(1, authToken);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String username = rs.getString("username");
+                    String token = rs.getString("authToken");
+                    return new AuthData(username, token);
+                }
+            }
+        } catch (SQLException | DataAccessException ex) {
+            throw new DataAccessException("Unable to get auth data: " + ex.getMessage(), ex);
+        }
         return null;
     }
 
@@ -50,17 +80,37 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public void deleteAuth(String authToken) {
-
+    public void deleteAuth(String authToken) throws DataAccessException{
+        var statement = "DELETE FROM auth WHERE authToken =?";
+        executeUpdate(statement, authToken);
     }
 
     @Override
-    public GameData createGame(GameData game) {
-        return null;
+    public GameData createGame(GameData game) throws DataAccessException{
+        var statement = "INSERT INTO game (gameID, gameName, whiteUsername, blackUsername, gameJSON) VALUES (?, ?, ?, ?, ?)";
+        executeUpdate(statement, game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername(), game.gameJSON());
+        return game;
     }
 
     @Override
-    public GameData getGame(int gameId) {
+    public GameData getGame(int gameId) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID, gameName, whiteUsername, blackUsername, gameJSON FROM game WHERE gameID =?";
+            PreparedStatement ps = conn.prepareStatement(statement);
+            ps.setInt(1, gameId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int ID = rs.getInt("gameID");
+                    String gameName = rs.getString("gameName");
+                    String whiteUser = rs.getString("whiteUsername");
+                    String blackUser = rs.getString("blackUsername");
+                    String gameJSON = rs.getString("gameJSON");
+                    return GameData.fromJSON(ID, gameName, whiteUser, blackUser, gameJSON);
+                }
+            }
+        } catch (SQLException | DataAccessException ex) {
+            throw new DataAccessException("Unable to get game data: " + ex.getMessage(), ex);
+        }
         return null;
     }
 
@@ -70,8 +120,27 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public List<GameData> getGames() {
-        return List.of();
+    public List<GameData> getGames() throws DataAccessException{
+       List<GameData> games = new ArrayList<>();
+        var statement = "SELECT gameID, gameName, whiteUsername, blackUsername, gameJSON FROM game";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(statement);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int gameID = rs.getInt("gameID");
+                    String gameName = rs.getString("gameName");
+                    String whiteUser = rs.getString("whiteUsername");
+                    String blackUser = rs.getString("blackUsername");
+                    String gameJSON = rs.getString("gameJSON");
+
+                    GameData game = GameData.fromJSON(gameID, gameName, whiteUser, blackUser, gameJSON);
+                    games.add(game);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException("Unable to read game data: " + ex.getMessage(), ex);
+        }
+        return games;
     }
 
     private void executeUpdate(String statement, Object... params) throws DataAccessException {

@@ -38,7 +38,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getUserfail() {
+    void getUserfail() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var res = db.getUser("non");
         assertNull(res);
@@ -56,7 +56,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getAuthfail(){
+    void getAuthfail() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var res = db.getAuth("non");
 
@@ -84,7 +84,7 @@ class DataAccessTest {
     }
 
     @Test
-    void createGame(){
+    void createGame() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var game = new GameData(1, "test", null, null, null);
         db.createGame(game);
@@ -93,7 +93,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getGame(){
+    void getGame() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var game = new GameData(1, "test", null, null, null);
         db.createGame(game);
@@ -103,7 +103,7 @@ class DataAccessTest {
     }
 
     @Test
-    void updateGame(){
+    void updateGame() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var game = new GameData(1, "test", null, null, null);
         db.createGame(game);
@@ -115,7 +115,7 @@ class DataAccessTest {
     }
 
     @Test
-    void getGames(){
+    void getGames() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
         var game = new GameData(1, "test", null, null, null);
         var juego = new GameData(2, "prueba", "joseph", null, null);
