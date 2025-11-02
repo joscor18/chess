@@ -19,9 +19,9 @@ public class SqlDataAccess implements DataAccess{
     public void clear() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()){
             try (var statement = conn.createStatement()){
-                statement.executeUpdate("TRUNCATE TABLE user");
-                statement.executeUpdate("TRUNCATE TABLE auth");
-                statement.executeUpdate("TRUNCATE TABLE game");
+                statement.executeUpdate("DELETE FROM user");
+                statement.executeUpdate("DELETE FROM auth");
+                statement.executeUpdate("DELETE FROM game");
             }
         }catch (SQLException | DataAccessException ex){
             throw new DataAccessException("clear failed",ex);
@@ -87,9 +87,27 @@ public class SqlDataAccess implements DataAccess{
 
     @Override
     public GameData createGame(GameData game) throws DataAccessException{
-        var statement = "INSERT INTO game (gameID, gameName, whiteUsername, blackUsername, gameJSON) VALUES (?, ?, ?, ?, ?)";
-        executeUpdate(statement, game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername(), game.gameJSON());
-        return game;
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "INSERT INTO game (gameID, gameName, whiteUsername, blackUsername, gameJSON) VALUES (?, ?, ?, ?, ?)";
+            try(PreparedStatement ps = conn.prepareStatement(statement)) {
+                String gameJSON = game.gameJSON();
+                ps.setString(1, game.gameName());
+                ps.setString(2, game.whiteUsername());
+                ps.setString(3, game.blackUsername());
+                ps.setString(4, gameJSON);
+                ps.executeUpdate();
+
+                try(ResultSet keys = ps.getGeneratedKeys()){
+                    if(keys.next()){
+                        int gameID = keys.getInt(1);
+                        return new GameData(gameID, game.gameName(), game.whiteUsername(), game.blackUsername(), game.game());
+                    }
+                }
+            }
+        } catch (SQLException | DataAccessException ex) {
+            throw new DataAccessException("Unable to update game: " + ex.getMessage(), ex);
+        }
+        return null;
     }
 
     @Override
@@ -115,17 +133,35 @@ public class SqlDataAccess implements DataAccess{
     }
 
     @Override
-    public void updateGame(GameData game) {
+    public void updateGame(GameData game) throws DataAccessException {
+        var statement = "UPDATE game SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameJSON = ? WHERE gameID = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(statement);
+            String gameJSON = game.gameJSON();
 
+            ps.setString(1, game.gameName());
+            ps.setString(2, game.whiteUsername());
+            ps.setString(3, game.blackUsername());
+            ps.setString(4, gameJSON);
+            ps.setInt(5, game.gameID());
+
+            int rows = ps.executeUpdate();
+            if(rows == 0){
+                throw new DataAccessException("No game found with gameID: "+game.gameID());
+            }
+
+        } catch (SQLException | DataAccessException ex) {
+            throw new DataAccessException("Unable to update game: " + ex.getMessage(), ex);
+        }
     }
 
     @Override
     public List<GameData> getGames() throws DataAccessException{
        List<GameData> games = new ArrayList<>();
-        var statement = "SELECT gameID, gameName, whiteUsername, blackUsername, gameJSON FROM game";
         try (Connection conn = DatabaseManager.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(statement);
-            try (ResultSet rs = ps.executeQuery()) {
+            var statement = "SELECT gameID, gameName, whiteUsername, blackUsername, gameJSON FROM game";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     int gameID = rs.getInt("gameID");
                     String gameName = rs.getString("gameName");
