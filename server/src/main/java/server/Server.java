@@ -21,6 +21,7 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final DataAccess dataAccess;
+    private final Gson gson = new Gson();
 
     public Server() {
         try {
@@ -29,6 +30,12 @@ public class Server {
             gameService = new GameService(dataAccess);
 
             server = Javalin.create(config -> config.staticFiles.add("web"));
+
+            server.exception(Exception.class, (ex, ctx)->{
+                ctx.status(500);
+                var msg = Map.of("message", "Error: "+ex.getMessage());
+                ctx.result(gson.toJson(msg));
+            });
 
             // Register your endpoints and exception handlers here.
             server.delete("db",ctx -> {dataAccess.clear(); ctx.result("{}");});
@@ -64,7 +71,14 @@ public class Server {
             ctx.result(serializer.toJson(authData));
         } catch (Exception ex){
             var msg = Map.of("message", "Error: " + ex.getMessage());
-            ctx.status(403).result(serializer.toJson(msg));
+            String mess = ex.getMessage().toLowerCase();
+            if(mess.contains("already taken")){
+                ctx.status(403).result(serializer.toJson(msg));
+            }else if (mess.contains("bad request")){
+                ctx.status(400).result(serializer.toJson(msg));
+            }else{
+                ctx.status(500).result(serializer.toJson(msg));
+            }
         }
     }
 
@@ -84,9 +98,14 @@ public class Server {
         } catch (IllegalArgumentException ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(400).result(serializer.toJson(msg));
-        } catch(Exception ex){
+        } catch(Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
-            ctx.status(401).result(serializer.toJson(msg));
+            String mess = ex.getMessage().toLowerCase();
+            if (mess.contains("unauthorized")) {
+                ctx.status(401).result(serializer.toJson(msg));
+            } else {
+                ctx.status(500).result(serializer.toJson(msg));
+            }
         }
     }
 
@@ -99,7 +118,12 @@ public class Server {
 
         } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
-            ctx.status(401).result(serializer.toJson(msg));
+            String mess = ex.getMessage().toLowerCase();
+            if (mess.contains("unauthorized")) {
+                ctx.status(401).result(serializer.toJson(msg));
+            } else {
+                ctx.status(500).result(serializer.toJson(msg));
+            }
         }
     }
 
@@ -113,7 +137,12 @@ public class Server {
 
         } catch (Exception ex) {
             var msg = Map.of("message", "Error: " + ex.getMessage());
-            ctx.status(401).result(serializer.toJson(msg));
+            String mess = ex.getMessage().toLowerCase();
+            if (mess.contains("unauthorized")) {
+                ctx.status(401).result(serializer.toJson(msg));
+            } else {
+                ctx.status(500).result(serializer.toJson(msg));
+            }
         }
     }
 

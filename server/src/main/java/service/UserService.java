@@ -6,7 +6,6 @@ import datamodel.AuthData;
 import datamodel.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.xml.crypto.Data;
 import java.util.UUID;
 
 public class UserService {
