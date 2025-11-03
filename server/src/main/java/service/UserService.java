@@ -30,7 +30,7 @@ public class UserService {
     }
 
     public AuthData login(UserData user)throws Exception{
-        if(dataAccess.getUser(user.username()) == null || !dataAccess.getUser(user.username()).password().equals(user.password())){
+        if(dataAccess.getUser(user.username()) == null || !BCrypt.checkpw(user.password(), dataAccess.getUser(user.username()).password())){
             throw new DataAccessException("unauthorized");
         }
         var authData = new AuthData(user.username(), genAuthToken());
