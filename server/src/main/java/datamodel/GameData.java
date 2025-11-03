@@ -13,7 +13,7 @@ public record GameData(int gameID, String gameName, String whiteUsername, String
 
     public static GameData fromJSON(int gameID, String gameName, String whiteUsername, String blackUsername, String gameJSON){
         ChessGame game = null;
-        if(gameJSON != null){
+        if(gameJSON != null && gameJSON.isBlank()){
             game = new Gson().fromJson(gameJSON, ChessGame.class);
         }
         return new GameData(gameID, gameName, whiteUsername, blackUsername, game);

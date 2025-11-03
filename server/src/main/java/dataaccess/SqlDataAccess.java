@@ -1,5 +1,6 @@
 package dataaccess;
 
+import com.google.gson.Gson;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
@@ -30,8 +31,17 @@ public class SqlDataAccess implements DataAccess{
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, user.username(), user.password(), user.email());
+        var statement = "INSERT INTO user (username, password, email) VALUES ( ?, ?, ?)";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(statement);
+
+            ps.setString(1, user.username());
+            ps.setString(2, user.password());
+            ps.setString(3, user.email());
+            ps.executeUpdate();
+        } catch (SQLException | DataAccessException ex) {
+            throw new DataAccessException("Unable to create user: " + ex.getMessage(), ex);
+        }
     }
 
     @Override
@@ -87,27 +97,27 @@ public class SqlDataAccess implements DataAccess{
 
     @Override
     public GameData createGame(GameData game) throws DataAccessException{
+        var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, gameJSON) VALUES ( ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "INSERT INTO game (gameID, gameName, whiteUsername, blackUsername, gameJSON) VALUES (?, ?, ?, ?, ?)";
-            try(PreparedStatement ps = conn.prepareStatement(statement)) {
-                String gameJSON = game.gameJSON();
-                ps.setString(1, game.gameName());
-                ps.setString(2, game.whiteUsername());
-                ps.setString(3, game.blackUsername());
-                ps.setString(4, gameJSON);
+            var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
+                ps.setString(1, game.whiteUsername());
+                ps.setString(2, game.blackUsername());
+                ps.setString(3, game.gameName());
+                ps.setString(4, new Gson().toJson(game.game()));
+
                 ps.executeUpdate();
 
                 try(ResultSet keys = ps.getGeneratedKeys()){
                     if(keys.next()){
                         int gameID = keys.getInt(1);
                         return new GameData(gameID, game.gameName(), game.whiteUsername(), game.blackUsername(), game.game());
+                    }else{
+                        throw new DataAccessException("failed to get gameID");
                     }
                 }
-            }
         } catch (SQLException | DataAccessException ex) {
             throw new DataAccessException("Unable to update game: " + ex.getMessage(), ex);
         }
-        return null;
     }
 
     @Override
@@ -208,10 +218,9 @@ public class SqlDataAccess implements DataAccess{
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS user (
-              `username` varchar(256) NOT NULL,
+              `username` varchar(256) PRIMARY KEY,
               `password` varchar(256) NOT NULL,
-              `email` varchar(256) NOT NULL,
-              PRIMARY KEY (`username`)
+              `email` varchar(256)
             )
             """,
             """

@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import datamodel.AuthData;
 import datamodel.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.xml.crypto.Data;
 import java.util.UUID;
@@ -20,7 +21,9 @@ public class UserService {
         if(dataAccess.getUser(user.username()) != null){
             throw new Exception("already taken");
         }
-        dataAccess.createUser(user);
+        String hashed = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        UserData hashUser = new UserData(user.username(), hashed, user.email());
+        dataAccess.createUser(hashUser);
         var authData = new AuthData(user.username(), genAuthToken());
         dataAccess.createAuth(authData);
         return authData;

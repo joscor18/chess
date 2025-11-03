@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.SqlDataAccess;
@@ -19,11 +20,11 @@ public class Server {
     private final Javalin server;
     private final UserService userService;
     private final GameService gameService;
+    private final DataAccess dataAccess;
 
     public Server() {
         try {
-            var dataAccess = new SqlDataAccess();
-
+            dataAccess = new SqlDataAccess();
             userService = new UserService(dataAccess);
             gameService = new GameService(dataAccess);
 
