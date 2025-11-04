@@ -24,7 +24,10 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public void createUser(UserData user) {
+    public void createUser(UserData user) throws DataAccessException{
+        if(users.containsKey(user.username())){
+            throw new DataAccessException("User exists: "+ user.username());
+        }
         users.put(user.username(), user);
     }
 
@@ -39,17 +42,26 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public void createAuth(AuthData auth) {
+    public void createAuth(AuthData auth) throws DataAccessException {
+        if(authData.containsKey(auth.authToken())){
+            throw new DataAccessException("Auth token exists: "+ auth.authToken());
+        }
         authData.put(auth.authToken(), auth);
     }
 
     @Override
-    public void deleteAuth(String authToken) {
+    public void deleteAuth(String authToken) throws DataAccessException{
+        if(!authData.containsKey(authToken)){
+            throw new DataAccessException("npo auth found for authToken: " + authToken);
+        }
         authData.remove(authToken);
     }
 
     @Override
-    public GameData createGame(GameData game) {
+    public GameData createGame(GameData game) throws DataAccessException{
+        if(game == null || game.gameName() == null){
+            throw new DataAccessException("Invalid game");
+        }
         int id = nextGameId++;
         GameData newGame = new GameData(id,game.gameName(), game.whiteUsername(), game.blackUsername(), game.game());
         games.put(id, newGame);
@@ -62,7 +74,10 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public void updateGame(GameData game) {
+    public void updateGame(GameData game) throws DataAccessException{
+        if(!games.containsKey(game.gameID())){
+            throw new DataAccessException("no game found for: " + game.gameID());
+        }
         games.put(game.gameID(), game);
     }
 

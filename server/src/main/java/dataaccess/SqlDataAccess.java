@@ -128,12 +128,12 @@ public class SqlDataAccess implements DataAccess{
             ps.setInt(1, gameId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    int ID = rs.getInt("gameID");
+                    int id = rs.getInt("gameID");
                     String gameName = rs.getString("gameName");
                     String whiteUser = rs.getString("whiteUsername");
                     String blackUser = rs.getString("blackUsername");
                     String gameJSON = rs.getString("gameJSON");
-                    return GameData.fromJSON(ID, gameName, whiteUser, blackUser, gameJSON);
+                    return GameData.fromJSON(id, gameName, whiteUser, blackUser, gameJSON);
                 }
             }
         } catch (SQLException | DataAccessException ex) {
@@ -191,24 +191,23 @@ public class SqlDataAccess implements DataAccess{
 
     private void executeUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (int i = 0; i < params.length; i++) {
-                    Object param = params[i];
-                    switch (param) {
-                        case String p -> ps.setString(i + 1, p);
-                        case Integer p -> ps.setInt(i + 1, p);
+            PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+                switch (param) {
+                    case String p -> ps.setString(i + 1, p);
+                    case Integer p -> ps.setInt(i + 1, p);
 
-                        case null -> ps.setNull(i + 1, NULL);
-                        default -> {
-                        }
+                    case null -> ps.setNull(i + 1, NULL);
+                    default -> {
                     }
                 }
-                ps.executeUpdate();
+            }
+            ps.executeUpdate();
 
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    rs.getInt(1);
-                }
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                rs.getInt(1);
             }
         } catch (SQLException ex) {
             throw new DataAccessException("SQL update failed: " + statement,ex);
