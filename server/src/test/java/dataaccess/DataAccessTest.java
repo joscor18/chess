@@ -3,23 +3,38 @@ package dataaccess;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class DataAccessTest {
 
+    private DataAccess db;
+    private UserData user;
+    private AuthData authData;
+    private GameData game1;
+    private GameData juego1;
+
+    @BeforeEach
+    void setup() throws DataAccessException{
+        db = new MemoryDataAccess();
+        user = new UserData("joe","j@j.com","toomanysecrets");
+        authData = new AuthData("joe", "token");
+        game1 = new GameData(1, "test", null, null, null);
+        juego1 =  new GameData(2, "prueba", "joseph", null, null);
+
+    }
+
     @Test
     void clearSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        db.createUser(new UserData("joe","j@j.com","toomanysecrets"));
+        db.createUser(user);
         db.clear();
         assertNull(db.getUser("joe"));
     }
 
     @Test
     void clearFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
         db.createUser(new UserData("joe","j@j.com","toomanysecrets"));
         db.clear();
         assertNull(db.getUser("joe"));
@@ -27,16 +42,12 @@ class DataAccessTest {
 
     @Test
     void createUserSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var user = new UserData("joe","j@j.com","toomanysecrets");
         db.createUser(user);
         assertEquals(user, db.getUser(user.username()));
     }
 
     @Test
     void createUserFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var user = new UserData("joe","j@j.com","toomanysecrets");
         db.createUser(user);
         assertThrows(DataAccessException.class, ()->
                 db.createUser(user), "Shouldn't allow duplicates");
@@ -44,25 +55,20 @@ class DataAccessTest {
 
     @Test
     void getUserSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var userDb = new UserData("joseph","j@j.com","toomany");
-        db.createUser(userDb);
-        var res = db.getUser(userDb.username());
+        db.createUser(user);
+        var res = db.getUser(user.username());
         assertNotNull(res);
-        assertEquals(userDb, res);
+        assertEquals(user, res);
     }
 
     @Test
     void getUserFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
         var res = db.getUser("non");
         assertNull(res);
     }
 
     @Test
     void getAuthSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
         var res = db.getAuth("token");
         assertNotNull(res);
@@ -72,7 +78,6 @@ class DataAccessTest {
 
     @Test
     void getAuthFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
         var res = db.getAuth("non");
 
         assertNull(res);
@@ -80,8 +85,6 @@ class DataAccessTest {
 
     @Test
     void createAuthSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
         var res = db.getAuth("token");
         assertEquals(authData,res);
@@ -89,8 +92,6 @@ class DataAccessTest {
 
     @Test
     void createAuthFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
         assertThrows(DataAccessException.class, ()->
                 db.createAuth(authData), "Shouldn't allow duplicates");
@@ -99,8 +100,6 @@ class DataAccessTest {
 
     @Test
     void deleteAuthSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        AuthData authData = new AuthData("joe", "token");
         db.createAuth(authData);
         var res = db.getAuth("token");
         assertEquals(authData,res);
@@ -110,51 +109,41 @@ class DataAccessTest {
 
     @Test
     void deleteAuthFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
         assertThrows(DataAccessException.class, ()->
                 db.deleteAuth("non"), "missing authToken");
     }
 
     @Test
     void createGameSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        db.createGame(game);
+        db.createGame(game1);
         var res = db.getGame(1);
-        assertEquals(game, res);
+        assertEquals(game1, res);
     }
 
     @Test
     void createGameFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
         assertThrows(DataAccessException.class, ()->
                 db.createGame(null), "creating null game");
     }
 
     @Test
     void getGameSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        db.createGame(game);
+        db.createGame(game1);
         var res = db.getGame(1);
         assertNotNull(res);
-        assertEquals(game, res);
+        assertEquals(game1, res);
     }
 
     @Test
     void getGameFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        db.createGame(game);
+        db.createGame(game1);
         var res = db.getGame(4);
         assertNull(res, "nonexistent gameID");
     }
 
     @Test
     void updateGameSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        db.createGame(game);
+        db.createGame(game1);
         var changes = new GameData(1, "test", "joe", null, null);
         db.updateGame(changes);
         var res = db.getGame(1);
@@ -164,34 +153,32 @@ class DataAccessTest {
 
     @Test
     void updateGameFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "non", null, null, null);
         assertThrows(DataAccessException.class, ()->
-                db.updateGame(game));
+                db.updateGame(game1));
     }
 
     @Test
     void getGamesSuccess() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        var juego = new GameData(2, "prueba", "joseph", null, null);
-        db.createGame(game);
-        db.createGame(juego);
+        db.createGame(game1);
+        db.createGame(juego1);
         var res = db.getGames();
         assertNotNull(res);
         assertEquals(2, res.size());
-        assertTrue(res.contains(game));
-        assertTrue(res.contains(juego));
+        assertTrue(res.contains(game1));
+        assertTrue(res.contains(juego1));
     }
 
     @Test
     void getGamesFail() throws DataAccessException {
-        DataAccess db = new MemoryDataAccess();
-        var game = new GameData(1, "test", null, null, null);
-        var juego = new GameData(2, "prueba", "joseph", null, null);
         var res = db.getGames();
         assertNotNull(res);
         assertTrue(res.isEmpty());
+    }
+
+    private DataAccess createDb() throws DataAccessException{
+        DataAccess db = new MemoryDataAccess();
+        db.createUser(new UserData("joe","j@j.com","toomanysecrets"));
+        return db;
     }
 
 }
