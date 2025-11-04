@@ -175,10 +175,4 @@ class DataAccessTest {
         assertTrue(res.isEmpty());
     }
 
-    private DataAccess createDb() throws DataAccessException{
-        DataAccess db = new MemoryDataAccess();
-        db.createUser(new UserData("joe","j@j.com","toomanysecrets"));
-        return db;
-    }
-
 }
