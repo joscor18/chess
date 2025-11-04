@@ -45,11 +45,11 @@ class DataAccessTest {
     @Test
     void getUserSuccess() throws DataAccessException {
         DataAccess db = new MemoryDataAccess();
-        var user = new UserData("joe","j@j.com","toomanysecrets");
-        db.createUser(user);
-        var res = db.getUser(user.username());
+        var userDb = new UserData("joseph","j@j.com","toomany");
+        db.createUser(userDb);
+        var res = db.getUser(userDb.username());
         assertNotNull(res);
-        assertEquals(user, res);
+        assertEquals(userDb, res);
     }
 
     @Test
