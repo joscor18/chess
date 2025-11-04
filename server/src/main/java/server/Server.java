@@ -70,15 +70,7 @@ public class Server {
             //var res = Map.of("username", req.get("username"), "authToken", "yzx");
             ctx.result(serializer.toJson(authData));
         } catch (Exception ex){
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if(mess.contains("already taken")){
-                ctx.status(403).result(serializer.toJson(msg));
-            }else if (mess.contains("bad request")){
-                ctx.status(400).result(serializer.toJson(msg));
-            }else{
-                ctx.status(500).result(serializer.toJson(msg));
-            }
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -99,13 +91,7 @@ public class Server {
             var msg = Map.of("message", "Error: " + ex.getMessage());
             ctx.status(400).result(serializer.toJson(msg));
         } catch(Exception ex) {
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if (mess.contains("unauthorized")) {
-                ctx.status(401).result(serializer.toJson(msg));
-            } else {
-                ctx.status(500).result(serializer.toJson(msg));
-            }
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -115,15 +101,8 @@ public class Server {
             var authToken = ctx.header("Authorization");
             userService.logout(authToken);
             ctx.result("{}");
-
         } catch (Exception ex) {
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if (mess.contains("unauthorized")) {
-                ctx.status(401).result(serializer.toJson(msg));
-            } else {
-                ctx.status(500).result(serializer.toJson(msg));
-            }
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -136,13 +115,7 @@ public class Server {
             ctx.result(serializer.toJson(req));
 
         } catch (Exception ex) {
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if (mess.contains("unauthorized")) {
-                ctx.status(401).result(serializer.toJson(msg));
-            } else {
-                ctx.status(500).result(serializer.toJson(msg));
-            }
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -160,16 +133,7 @@ public class Server {
             ctx.result(serializer.toJson(existGame));
 
         } catch (Exception ex) {
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if(mess.contains("unauthorized")){
-                ctx.status(401).result(serializer.toJson(msg));
-            }else if (mess.contains("bad request")){
-                ctx.status(400).result(serializer.toJson(msg));
-            }else{
-                ctx.status(500).result(serializer.toJson(msg));
-            }
-
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -192,31 +156,14 @@ public class Server {
                 var msg = Map.of("message", "Error: bad request");
                 ctx.status(400).result(serializer.toJson(msg));
                 return;
-                
-            }
-            
-            if(!stringPlayerColor.equalsIgnoreCase("white") && !stringPlayerColor.equalsIgnoreCase("black")){
-                var msg = Map.of("message", "Error: bad request");
-                ctx.status(400).result(serializer.toJson(msg));
-                return;
-            }
 
+            }
             var gameId = joinreq.get("gameID");
             int gameIdCast = ((Number)gameId).intValue();
             gameService.joinGame(authToken, stringPlayerColor, gameIdCast);
             ctx.result("{}");
         } catch (Exception ex) {
-            var msg = Map.of("message", "Error: " + ex.getMessage());
-            String mess = ex.getMessage().toLowerCase();
-            if(mess.contains("unauthorized")){
-                ctx.status(401).result(serializer.toJson(msg));
-            }else if (mess.contains("bad request")){
-                ctx.status(400).result(serializer.toJson(msg));
-            }else if (mess.contains("already taken")) {
-                ctx.status(403).result(serializer.toJson(msg));
-            }else{
-                ctx.status(500).result(serializer.toJson(msg));
-            }
+            evalMess(ex, ctx, serializer);
         }
     }
 
@@ -227,5 +174,19 @@ public class Server {
 
     public void stop() {
         server.stop();
+    }
+
+    private void evalMess(Exception ex, Context ctx, Gson serializer){
+        var msg = Map.of("message", "Error: " + ex.getMessage());
+        String mess = ex.getMessage().toLowerCase();
+        if(mess.contains("unauthorized")){
+            ctx.status(401).result(serializer.toJson(msg));
+        }else if (mess.contains("bad request")){
+            ctx.status(400).result(serializer.toJson(msg));
+        }else if (mess.contains("already taken")) {
+            ctx.status(403).result(serializer.toJson(msg));
+        }else{
+            ctx.status(500).result(serializer.toJson(msg));
+        }
     }
 }

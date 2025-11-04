@@ -31,13 +31,13 @@ public class SqlDataAccess implements DataAccess{
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user (username, password, email) VALUES ( ?, ?, ?)";
+        var statement = "INSERT INTO user (username, email, password) VALUES ( ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(statement);
 
             ps.setString(1, user.username());
-            ps.setString(2, user.password());
-            ps.setString(3, user.email());
+            ps.setString(2, user.email());
+            ps.setString(3, user.password());
             ps.executeUpdate();
         } catch (SQLException | DataAccessException ex) {
             throw new DataAccessException("Unable to create user: " + ex.getMessage(), ex);
@@ -46,16 +46,16 @@ public class SqlDataAccess implements DataAccess{
 
     @Override
     public UserData getUser(String username) throws DataAccessException{
-        var statement = "SELECT username, password, email FROM user WHERE username =?";
+        var statement = "SELECT username, email, password FROM user WHERE username =?";
         try (Connection conn = DatabaseManager.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(statement);
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String user = rs.getString("username");
-                    String password = rs.getString("password");
                     String email = rs.getString("email");
-                    return new UserData(user, password, email);
+                    String password = rs.getString("password");
+                    return new UserData(user, email, password);
                 }
             }
         } catch (SQLException ex) {
@@ -219,8 +219,9 @@ public class SqlDataAccess implements DataAccess{
             """
             CREATE TABLE IF NOT EXISTS user (
               `username` varchar(256) PRIMARY KEY,
-              `password` varchar(256) NOT NULL,
-              `email` varchar(256)
+              `email` varchar(256),
+              `password` varchar(256) NOT NULL
+              
             )
             """,
             """

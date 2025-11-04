@@ -38,7 +38,7 @@ class UserServiceTest {
         DataAccess db = new MemoryDataAccess();
         var userService = new UserService(db);
         var user = new UserData("joe", "j@j.com", "toomanysecrets");
-        db.createUser(user);
+        userService.register(user);
         AuthData authData = userService.login(user);
         var res = db.getAuth(authData.authToken());
         assertNotNull(authData);

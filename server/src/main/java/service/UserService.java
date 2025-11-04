@@ -21,7 +21,7 @@ public class UserService {
             throw new Exception("already taken");
         }
         String hashed = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-        UserData hashUser = new UserData(user.username(), hashed, user.email());
+        UserData hashUser = new UserData(user.username(), user.email(), hashed);
         dataAccess.createUser(hashUser);
         var authData = new AuthData(user.username(), genAuthToken());
         dataAccess.createAuth(authData);
@@ -29,7 +29,8 @@ public class UserService {
     }
 
     public AuthData login(UserData user)throws Exception{
-        if(dataAccess.getUser(user.username()) == null || !BCrypt.checkpw(user.password(), dataAccess.getUser(user.username()).password())){
+        UserData userdb = dataAccess.getUser(user.username());
+        if(userdb == null || !BCrypt.checkpw(user.password(), userdb.password())){
             throw new DataAccessException("unauthorized");
         }
         var authData = new AuthData(user.username(), genAuthToken());
