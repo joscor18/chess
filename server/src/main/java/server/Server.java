@@ -1,7 +1,6 @@
 package server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
@@ -24,6 +23,7 @@ public class Server {
     private final Gson gson = new Gson();
 
     public Server() {
+        // try catch needed for SqlDataAccess Exception to not break everything else
         try {
             dataAccess = new SqlDataAccess();
             userService = new UserService(dataAccess);
@@ -156,7 +156,6 @@ public class Server {
                 var msg = Map.of("message", "Error: bad request");
                 ctx.status(400).result(serializer.toJson(msg));
                 return;
-
             }
             var gameId = joinreq.get("gameID");
             int gameIdCast = ((Number)gameId).intValue();
@@ -167,15 +166,18 @@ public class Server {
         }
     }
 
+    //opens up the port we want
     public int run(int desiredPort) {
         server.start(desiredPort);
         return server.port();
     }
 
+    //Makes sure that we don't continue to open http handlers
     public void stop() {
         server.stop();
     }
 
+    //Checks all message possibilities for simplicity
     private void evalMess(Exception ex, Context ctx, Gson serializer){
         var msg = Map.of("message", "Error: " + ex.getMessage());
         String mess = ex.getMessage().toLowerCase();

@@ -20,6 +20,8 @@ public class UserService {
         if(dataAccess.getUser(user.username()) != null){
             throw new Exception("already taken");
         }
+        //adjust for hashed password so that it passes the compared value with BCrypt,
+        //for safety reasons
         String hashed = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         UserData hashUser = new UserData(user.username(), user.email(), hashed);
         dataAccess.createUser(hashUser);
@@ -30,6 +32,7 @@ public class UserService {
 
     public AuthData login(UserData user)throws Exception{
         UserData userdb = dataAccess.getUser(user.username());
+        //compares BCrypt password
         if(userdb == null || !BCrypt.checkpw(user.password(), userdb.password())){
             throw new DataAccessException("unauthorized");
         }
