@@ -1,5 +1,6 @@
 package ui;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -17,21 +18,21 @@ public class ChessClient {
 //    }
 
     public void run() {
-        System.out.println(" Welcome to 240Chess. Sign in to start.");
+        System.out.println(" Welcome to 240 Chess. Type Help to get Started.");
         //System.out.print(help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
-        while(!result.equals("quit")){
+        while(true){
             //check status of Login
             if(!loggedIn){
-                System.out.print("Logged out: ");
+                System.out.print("[LOGGED_OUT] >>> ");
             }else{
-                System.out.print("Logged in: ");
+                System.out.print("[LOGGED_IN] >>> ");
             }
 
             String line = scanner.nextLine();
-            result = eval(line);
+            eval(line);
             System.out.print(result);
 //            printPrompt();
 
@@ -43,9 +44,7 @@ public class ChessClient {
 //                System.out.print(msg);
 //            }
         }
-        System.out.println();
     }
-
 
 //    public void notify(Notification notification) {
 //        System.out.println(RED + notification.message());
@@ -54,29 +53,6 @@ public class ChessClient {
 //
 //    private void printPrompt() {
 //        System.out.print("\n" + RESET + ">>> " + GREEN);
-//    }
-
-
-//    public String signIn(String... params) throws ResponseException {
-//        if (params.length >= 1) {
-//            state = State.SIGNEDIN;
-//            visitorName = String.join("-", params);
-//            ws.enterPetShop(visitorName);
-//            return String.format("You signed in as %s.", visitorName);
-//        }
-//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
-//    }
-//
-//    public String rescuePet(String... params) throws ResponseException {
-//        assertSignedIn();
-//        if (params.length >= 2) {
-//            String name = params[0];
-//            PetType type = PetType.valueOf(params[1].toUpperCase());
-//            var pet = new Pet(0, name, type);
-//            pet = server.addPet(pet);
-//            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
-//        }
-//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
 //    }
 //
 //    public String listPets() throws ResponseException {
@@ -133,52 +109,94 @@ public class ChessClient {
 //        return null;
 //    }
 //
-//    public String help() {
-//        if (state == State.SIGNEDOUT) {
-//            return """
-//                    - signIn <yourname>
-//                    - quit
-//                    """;
-//        }
-//        return """
-//                - list
-//                - adopt <pet id>
-//                - rescue <name> <CAT|DOG|FROG|FISH>
-//                - adoptAll
-//                - signOut
-//                - quit
-//                """;
-//    }
-//
 //    private void assertSignedIn() throws ResponseException {
 //        if (state == State.SIGNEDOUT) {
 //            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
 //        }
 //    }
 
-        public String eval(String input) {
-            try {
-                String[] tokens = input.toLowerCase().split(" ");
-                String cmd = (tokens.length > 0) ? tokens[0] : "help";
-                String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-                return switch (cmd) {
-                    case "signin" -> signIn(params);
-                    case "rescue" -> rescuePet(params);
-                    case "list" -> listPets();
-                    case "signout" -> signOut();
-                    case "adopt" -> adoptPet(params);
-                    case "adoptall" -> adoptAllPets();
-                    case "quit" -> "quit";
-                    default -> help();
-                };
-            } catch (ResponseException ex) {
-                return ex.getMessage();
-            }
+    public void eval(String input){
+        if(!loggedIn){
+            evalPre(input);
+        }else{
+            evalPost(input);
         }
+    }
 
     //Prelogin Ui
+    public String evalPre(String input) {
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "help" -> help();
+                case "register" -> reg(params);
+                case "login" -> logIn(params);
+                case "quit" -> "quit";
+                default -> help();
+            };
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
+    }
 
+    public String logIn(String... params) throws ResponseException {
+//        if (params.length >= 1) {
+//            state = State.SIGNEDIN;
+//            visitorName = String.join("-", params);
+//            ws.enterPetShop(visitorName);
+            return String.format("You signed in as %s.", visitorName);
+//        }
+//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+    }
+
+    public String reg(String... params) throws ResponseException {
+//        assertSignedIn();
+//        if (params.length >= 2) {
+//            String name = params[0];
+//            PetType type = PetType.valueOf(params[1].toUpperCase());
+//            var pet = new Pet(0, name, type);
+//            pet = server.addPet(pet);
+            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
+//        }
+//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
+    }
+
+    public String help() {
+//        if (state == State.SIGNEDOUT) {
+//            return """
+//                    - signIn <yourname>
+//                    - quit
+//                    """;
+//        }
+        return """
+                - help
+                - register <USERNAME> <PASSWORD> <EMAIL>
+                - login <USERNAME> <PASSWORD>
+                - quit
+                """;
+    }
 
     //Postlogin UI
+    public String evalPost(String input) {
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "help" -> help();
+                case "create" -> reg(params);
+                case "list" -> logIn(params);
+                case "join" -> logIn(params);
+                case "observe" -> logIn(params);
+                case "logout" -> logIn(params);
+                case "quit" -> "quit";
+                default -> help();
+            };
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
+    }
     //GamePlay UI
 }
