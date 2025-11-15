@@ -100,16 +100,16 @@ public class ChessClient {
         return  String.format("Successfull log in %s", username);
     }
 
-    public String reg(String... params) throws ResponseException {
-//        assertSignedIn();
-//        if (params.length >= 2) {
-//            String name = params[0];
-//            PetType type = PetType.valueOf(params[1].toUpperCase());
-//            var pet = new Pet(0, name, type);
-//            pet = server.addPet(pet);
-            return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
-//        }
-//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
+    public String reg(String... params) {
+        if (params.length != 3) {
+            return "Must provide <USERNAME>, <PASSWORD>, and <EMAIL>";
+        }
+        String username = params[0];
+        String password = params[1];
+        String email = params[2];
+
+        this.loggedIn = true;
+        return  String.format("Successfull log in %s", username);
     }
 
     public String helpPost() {
@@ -134,8 +134,8 @@ public class ChessClient {
                 case "help" -> helpPost();
                 case "create" -> createGame(params);
                 case "list" -> list();
-                case "join" -> logIn(params);
-                case "observe" -> observe();
+                case "join" -> joinGames(params);
+                case "observe" -> observe(params);
                 case "logout" -> logOut();
                 case "quit" -> "quit";
                 default -> helpPost();
@@ -145,26 +145,21 @@ public class ChessClient {
         }
     }
 
-    public String logOut() throws ResponseException {
-//        assertSignedIn();
-//        ws.leavePetShop(visitorName);
-//        state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
+    public String logOut() {
+        this.loggedIn = false;
+        this.authToken = null;
+        return "You are logged out";
     }
 
-    public String createGame(String... params) throws ResponseException {
-//        assertSignedIn();
-//        if (params.length >= 2) {
-//            String name = params[0];
-//            PetType type = PetType.valueOf(params[1].toUpperCase());
-//            var pet = new Pet(0, name, type);
-//            pet = server.addPet(pet);
-        return String.format("You rescued %s. Assigned ID: %d", pet.name(), pet.id());
-//        }
-//        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <name> <CAT|DOG|FROG>");
+    public String createGame(String... params) {
+        if(params.length != 1){
+            return "Must provide <GAME_NAME>";
+        }
+        String gameName = params[0];
+        return String.format("Game %s created", gameName);
     }
 
-    public String list() throws ResponseException {
+    public String list(){
 //        assertSignedIn();
 //        PetList pets = server.listPets();
 //        var result = new StringBuilder();
@@ -172,14 +167,26 @@ public class ChessClient {
 //        for (Pet pet : pets) {
 //            result.append(gson.toJson(pet)).append('\n');
 //        }
-        return result.toString();
+//        return result.toString();
+        return "List of games";
     }
 
-    public String observe() throws ResponseException {
-//        assertSignedIn();
-//        ws.leavePetShop(visitorName);
-//        state = State.SIGNEDOUT;
-        return String.format("%s left the shop", visitorName);
+    public String joinGames(String... params) {
+        if(params.length != 2){
+            return "Must provide <GAME_ID> and <WHITE|BLACK>";
+        }
+        String gameID = params[0];
+        String playerColor = params[1];
+        return String.format("Joining %s as %s.",gameID, playerColor);
+    }
+
+    public String observe(String... params){
+        if(params.length != 1){
+            return "Must provide <ID>";
+        }
+        String gameID = params[0];
+        return String.format("Observing game %s", gameID);
+
     }
 
     //GamePlay UI
