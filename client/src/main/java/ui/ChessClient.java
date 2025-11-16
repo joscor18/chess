@@ -19,7 +19,7 @@ public class ChessClient {
 //    }
 
     public void run() {
-        System.out.println(" Welcome to 240 Chess. Type Help to get Started.");
+        System.out.println("♕ Welcome to 240 Chess. Type Help to get Started. ♕");
         //System.out.print(help());
         Scanner scanner = new Scanner(System.in);
         var result = "";
@@ -36,7 +36,7 @@ public class ChessClient {
 
             System.out.print(result);
         }
-        System.out.println("Exiting");
+        System.out.println(" Exiting...");
     }
 
 //    public void notify(Notification notification) {
@@ -64,10 +64,10 @@ public class ChessClient {
 
     public String helpPre() {
         return """
-                - help
-                - register <USERNAME> <PASSWORD> <EMAIL>
-                - login <USERNAME> <PASSWORD>
-                - quit
+                register <USERNAME> <PASSWORD> <EMAIL> - to create an account
+                login <USERNAME> <PASSWORD> - to play chess
+                quit - playing chess
+                help - with possible commands
                 """;
     }
 
@@ -190,4 +190,5 @@ public class ChessClient {
     }
 
     //GamePlay UI
+
 }
