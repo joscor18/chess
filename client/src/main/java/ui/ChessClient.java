@@ -178,7 +178,12 @@ public class ChessClient {
         }
         String gameID = params[0];
         String playerColor = params[1];
-        return String.format("Joining %s as %s.",gameID, playerColor);
+        String msg =  String.format("Joining %s as %s.",gameID, playerColor);
+        return switch (playerColor) {
+            case "white" -> msg + drawWhite();
+            case "black" -> msg + drawBlack();
+            default -> "Color must be 'white' or 'black'. ";
+        };
     }
 
     public String observe(String... params){
@@ -186,7 +191,8 @@ public class ChessClient {
             return "Must provide <ID>";
         }
         String gameID = params[0];
-        return String.format("Observing game %s", gameID);
+        String msg =  String.format("Observing game %s", gameID);
+        return msg + drawWhite();
 
     }
 

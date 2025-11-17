@@ -10,11 +10,11 @@ public class ChessBoard {
     // Board dimensions.
     private static final int BOARD_SIZE_IN_SQUARES = 8;
 
-    private static String drawWhite(){
+    static String drawWhite(){
         return drawBoard(true);
     }
 
-    private static String drawBlack(){
+    static String drawBlack(){
         return drawBoard(false);
     }
 
