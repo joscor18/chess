@@ -2,7 +2,6 @@ package ui;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
 import static ui.EscapeSequences.*;
 
@@ -10,44 +9,28 @@ import static ui.EscapeSequences.*;
 public class ChessBoard {
     // Board dimensions.
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
-    private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
-    // Padded characters.
-    private static final String EMPTY = "   ";
-    private static final String X = " X ";
-    private static final String O = " O ";
-
-    private static Random rand = new Random();
-
-
-    public static void main(String[] args) {
-        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-
-        out.print(ERASE_SCREEN);
-
-        drawHeaders(out);
-
-        drawTicTacToeBoard(out);
-
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
+    private static String drawWhite(){
+        return drawBoard(true);
     }
 
-    private static void drawHeaders(PrintStream out) {
+    private static String drawBlack(){
+        return drawBoard(false);
+    }
 
-        setBlack(out);
+    private static void drawHeaders(StringBuilder out, boolean b) {
+        out.append(EMPTY);
 
-        String[] headers = { "TIC", "TAC", "TOE" };
+        String[] headers = b ?
+                new String[]{"a", "b", "c" , "d", "e", "f", "g", "h"} :
+                new String[]{"h", "g", "f" , "e", "d", "c", "b", "a"};
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, headers[boardCol]);
-
-            if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-            }
+            out.append(SET_BG_COLOR_BLACK);
+            out.append(SET_BG_COLOR_WHITE);
+            out.append(headers[boardCol]);
         }
 
-        out.println();
+        out.append(EMPTY);
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
@@ -68,49 +51,53 @@ public class ChessBoard {
         setBlack(out);
     }
 
-    private static void drawTicTacToeBoard(PrintStream out) {
+    private static String drawBoard(Boolean b) {
+        StringBuilder out = new StringBuilder();
 
-        for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
+        String[][] board = initBoard();
 
-            drawRowOfSquares(out);
+        drawHeaders(out, b);
 
-            if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
-                // Draw horizontal row separator.
-                drawHorizontalLine(out);
-                setBlack(out);
-            }
+        for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
+            int boardRow = b ? (BOARD_SIZE_IN_SQUARES - 1 - row) : row;
+
+            drawSide(out, boardRow + 1);
+            drawRowOfSquares(out, b, boardRow, board);
+            drawSide(out, boardRow + 1);
+
+            out.append("\n");
         }
+        drawHeaders(out, b);
+        return out.toString();
     }
 
-    private static void drawRowOfSquares(PrintStream out) {
+    private static void drawSide(StringBuilder out, int i) {
+        out.append(SET_BG_COLOR_BLACK);
+        out.append(SET_TEXT_COLOR_WHITE);
+        out.append(" ").append(i).append(" ");
+    }
 
-        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
-            for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-                setWhite(out);
+    private static String[][] initBoard() {
+    }
 
-                if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+    private static void drawRowOfSquares(StringBuilder out, boolean b, int i, String[][] board) {
+        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            int c = b ? boardCol : (BOARD_SIZE_IN_SQUARES - 1 - boardCol);
 
-                    out.print(EMPTY.repeat(prefixLength));
-                    printPlayer(out, rand.nextBoolean() ? X : O);
-                    out.print(EMPTY.repeat(suffixLength));
-                }
-                else {
-                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-                }
-
-                if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-                    // Draw vertical column separator.
-                    setRed(out);
-                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-                }
-
-                setBlack(out);
+            boolean whiteSqu = (i + c) % 2 == 0;
+            if(whiteSqu){
+                out.append(SET_BG_COLOR_WHITE);
+            }else{
+                out.append(SET_BG_COLOR_BLACK);
             }
 
-            out.println();
+            String piece = board[i][c];
+            printPiece(out, piece);
         }
+
+    }
+
+    private static void printPiece(StringBuilder out, String piece) {
     }
 
     private static void drawHorizontalLine(PrintStream out) {
@@ -150,6 +137,7 @@ public class ChessBoard {
 
         setWhite(out);
     }
+
 
 
 }
