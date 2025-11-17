@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
+import static ui.ChessBoard.*;
 
 public class ChessClient {
     private String authToken = null;
