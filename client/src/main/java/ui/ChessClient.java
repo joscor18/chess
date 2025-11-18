@@ -199,11 +199,11 @@ public class ChessClient {
     public String list(){
         try{
             var games = server.listGames(this.authToken);
-
             StringBuilder out = new StringBuilder();
             gameListMap.clear();
             int count = 1;
             for(var game : games){
+                gameListMap.put(count, game.gameID());
                 out.append(String.format("%s", game.gameName()));
                 out.append(String.format(" White: %s\n", game.whiteUsername()));
                 out.append(String.format(" Black: %s\n", game.blackUsername()));
@@ -224,6 +224,9 @@ public class ChessClient {
         try{
             String gameID = params[0];
             int listNum = Integer.parseInt(gameID);
+            if(!gameListMap.containsKey(listNum)){
+                return "Game num " + listNum + "doesn't exist. Check 'list'.";
+            }
             String playerColor = params[1];
             int gameIDactual = gameListMap.get(listNum);
             server.joinGame(gameIDactual, playerColor, this.authToken);
@@ -245,9 +248,11 @@ public class ChessClient {
         try{
             String gameID = params[0];
             int listNum = Integer.parseInt(gameID);
-            String playerColor = params[1];
+            if(!gameListMap.containsKey(listNum)){
+                return "Game num " + listNum + "doesn't exist. Check 'list'.";
+            }
             int gameIDactual = gameListMap.get(listNum);
-            server.joinGame(gameIDactual, playerColor, this.authToken);
+            server.joinGame(gameIDactual, null, this.authToken);
             String msg =  String.format("Observing game %s", gameID);
             return msg + drawWhite();
         }catch (Exception ex){
