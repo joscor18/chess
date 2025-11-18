@@ -1,18 +1,24 @@
 package ui;
 
+import client.ServerFacade;
+import model.AuthData;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
-import static ui.EscapeSequences.*;
 import static ui.ChessBoard.*;
 
 public class ChessClient {
     private String authToken = null;
-    //private final ServerFacade server;
+    private final ServerFacade server;
     //private final WebSocketFacade ws;
     //private State state = state.SIGNEDOUT;
     private boolean loggedIn = false; // want to check if logged in first
+
+    public ChessClient() {
+        this.server = new ServerFacade("http://localhost:8080");
+    }
 
 //    public PetClient(String serverUrl) throws ResponseException {
 //        server = new ServerFacade(serverUrl);
@@ -109,8 +115,16 @@ public class ChessClient {
         String password = params[1];
         String email = params[2];
 
-        this.loggedIn = true;
-        return  String.format("Successfull log in %s", username);
+        try{
+            AuthData authData = server.register(username, password, email);
+
+            this.loggedIn = true;
+            this.authToken = authData.authToken();
+            return  String.format("Successfull log in %s", username);
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String helpPost() {

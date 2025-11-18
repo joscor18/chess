@@ -22,15 +22,16 @@ public class ChessBoard {
         out.append(EMPTY);
 
         String[] headers = b ?
-                new String[]{"a", "b", "c" , "d", "e", "f", "g", "h"} :
-                new String[]{"h", "g", "f" , "e", "d", "c", "b", "a"};
+                new String[]{" a ", " b ", "  c " , " d ", "  e ", "  f ", " g ", "  h "} :
+                new String[]{" h ", " g ", "  f " , " e ", "  d ", "  c ", " b ", "  a "};
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             out.append(SET_BG_COLOR_BLACK);
-            out.append(SET_BG_COLOR_WHITE);
+            out.append(SET_TEXT_COLOR_WHITE);
             out.append(headers[boardCol]);
         }
 
         out.append(EMPTY);
+        out.append("\n");
     }
 
 //    private static void drawHeader(PrintStream out, String headerText) {
@@ -55,7 +56,7 @@ public class ChessBoard {
         StringBuilder out = new StringBuilder();
 
         String[][] board = initBoard();
-
+        out.append("\n");
         drawHeaders(out, b);
 
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
@@ -68,6 +69,7 @@ public class ChessBoard {
             out.append("\n");
         }
         drawHeaders(out, b);
+        out.append(RESET_BG_COLOR);
         return out.toString();
     }
 
@@ -115,7 +117,7 @@ public class ChessBoard {
                 piece.equals(BLACK_PAWN)|| piece.equals(BLACK_QUEEN)|| piece.equals(BLACK_ROOK)){
             out.append(SET_TEXT_COLOR_BLUE);
         }else{
-            out.append(SET_BG_COLOR_BLACK);
+            out.append(SET_TEXT_COLOR_BLACK);
         }
 
         out.append(piece);
