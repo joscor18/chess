@@ -103,8 +103,16 @@ public class ChessClient {
         String username = params[0];
         String password = params[1];
 
-        this.loggedIn = true;
-        return  String.format("Successfull log in %s", username);
+        try{
+            AuthData authData = server.login(username, password);
+
+            this.loggedIn = true;
+            this.authToken = authData.authToken();
+            return  String.format("Successfull log in %s", username);
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String reg(String... params) {
@@ -161,9 +169,16 @@ public class ChessClient {
     }
 
     public String logOut() {
-        this.loggedIn = false;
-        this.authToken = null;
-        return "You are logged out";
+        try{
+            server.logout(this.authToken);
+
+            this.loggedIn = false;
+            this.authToken = null;
+            return "You are logged out";
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String createGame(String... params) {

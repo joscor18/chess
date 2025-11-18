@@ -51,4 +51,40 @@ public class ServerFacadeTests {
         Assertions.assertTrue(ex.getMessage().contains(msg));
     }
 
+    @Test
+    void loginPos() throws Exception{
+        facade.register("joe", "joe", "joe");
+        var authData = facade.login("joe", "joe");
+        Assertions.assertTrue(authData.authToken().length() > 10);
+        Assertions.assertEquals("joe", authData.username());
+    }
+
+    @Test
+    void loginNeg() throws Exception{
+        facade.register("joe", "joe", "joe");
+        facade.login("joe", "joe");
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.login("joe", "test");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
+
+    @Test
+    void logoutPos() throws Exception{
+        var authData = facade.register("joe", "joe", "joe");
+        Assertions.assertDoesNotThrow(()-> facade.logout(authData.authToken()));
+    }
+
+    @Test
+    void logoutNeg() throws Exception{
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.logout("joe");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
+
 }

@@ -27,6 +27,14 @@ public class ServerFacade {
         return handleResponse(res, AuthData.class);
     }
 
+    public AuthData login(String username, String password) throws Exception{
+        var path = "/session";
+        var reqBody = new LoginrRequest(username, password);
+        var req = buildRequest("POST", path, reqBody);
+        var res = sendRequest(req);
+        return handleResponse(res, AuthData.class);
+    }
+
     public void clear() throws Exception{
         var path = "/db";
         var req = buildRequest("DELETE", path, null);
@@ -34,14 +42,12 @@ public class ServerFacade {
         handleResponse(res, null);
     }
 
-
-
-
-//    public Pet addPet(Pet pet) throws ResponseException {
-//        var request = buildRequest("POST", "/pet", pet);
-//        var response = sendRequest(request);
-//        return handleResponse(response, Pet.class);
-//    }
+    public void logout(String authToken) throws Exception{
+        var path = "/session";
+        var req = buildRequest("DELETE", path, null, authToken);
+        var res = sendRequest(req);
+        handleResponse(res, null);
+    }
 
 //    public void deletePet(int id) throws ResponseException {
 //        var path = String.format("/pet/%s", id);
@@ -61,12 +67,20 @@ public class ServerFacade {
 //        return handleResponse(response, PetList.class);
 //    }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body){
+        return buildRequest(method, path, body, null);
+    }
+
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+        }
+
+        if(authToken != null){
+            request.setHeader("authorization", authToken);
         }
         return request.build();
     }
