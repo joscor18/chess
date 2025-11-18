@@ -70,7 +70,6 @@ public class ServerFacadeTests {
         Assertions.assertTrue(ex.getMessage().contains(msg));
     }
 
-
     @Test
     void logoutPos() throws Exception{
         var authData = facade.register("joe", "joe", "joe");
@@ -81,6 +80,22 @@ public class ServerFacadeTests {
     void logoutNeg() throws Exception{
         Exception ex = Assertions.assertThrows(Exception.class, ()-> {
             facade.logout("joe");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
+    @Test
+    void createPos() throws Exception{
+        var authData = facade.register("joe", "joe", "joe");
+        var createGameResponse = facade.createGames("newGame", authData.authToken());
+        Assertions.assertTrue(createGameResponse.gameID() > 0);
+    }
+
+    @Test
+    void createNeg() throws Exception{
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.createGames("joe", "test");
         });
         String msg = "Error: unauthorized";
         Assertions.assertTrue(ex.getMessage().contains(msg));

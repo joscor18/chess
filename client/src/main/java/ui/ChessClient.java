@@ -186,7 +186,14 @@ public class ChessClient {
             return "Must provide <GAME_NAME>";
         }
         String gameName = params[0];
-        return String.format("Game %s created", gameName);
+
+        try{
+            var createGameResponse = server.createGames(gameName, this.authToken);
+            return String.format("Game %s created (ID: %d", gameName, createGameResponse.gameID());
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String list(){

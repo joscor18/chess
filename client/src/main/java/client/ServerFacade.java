@@ -2,14 +2,12 @@ package client;
 
 
 import com.google.gson.Gson;
-import model.AuthData;
-import model.RegisterRequest;
+import model.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.security.spec.ECField;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -29,7 +27,7 @@ public class ServerFacade {
 
     public AuthData login(String username, String password) throws Exception{
         var path = "/session";
-        var reqBody = new LoginrRequest(username, password);
+        var reqBody = new LoginRequest(username, password);
         var req = buildRequest("POST", path, reqBody);
         var res = sendRequest(req);
         return handleResponse(res, AuthData.class);
@@ -49,17 +47,21 @@ public class ServerFacade {
         handleResponse(res, null);
     }
 
-//    public void deletePet(int id) throws ResponseException {
-//        var path = String.format("/pet/%s", id);
-//        var request = buildRequest("DELETE", path, null);
-//        var response = sendRequest(request);
-//        handleResponse(response, null);
-//    }
+    public CreateGameResponse createGames(String gameName, String authToken) throws Exception{
+        var path = "/game";
+        var reqBody = new CreateGameRequest(gameName);
+        var req = buildRequest("POST", path, reqBody, authToken);
+        var res = sendRequest(req);
+        return handleResponse(res, CreateGameResponse.class);
+    }
 
-//    public void deleteAllPets() throws ResponseException {
-//        var request = buildRequest("DELETE", "/pet", null);
-//        sendRequest(request);
-//    }
+    public void listGames() throws Exception{
+
+    }
+
+    public void joinGame() throws Exception{
+
+    }
 
 //    public PetList listPets() throws ResponseException {
 //        var request = buildRequest("GET", "/pet", null);
