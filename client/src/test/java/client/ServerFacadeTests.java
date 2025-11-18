@@ -101,5 +101,54 @@ public class ServerFacadeTests {
         Assertions.assertTrue(ex.getMessage().contains(msg));
     }
 
+    @Test
+    void listPos() throws Exception{
+        var authData = facade.register("joe", "joe", "joe");
+        facade.createGames("test", authData.authToken());
+        var games = facade.listGames(authData.authToken());
+        Assertions.assertFalse(games.isEmpty());
+    }
+
+    @Test
+    void listNeg() throws Exception{
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.listGames("joe");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
+    @Test
+    void joinPos() throws Exception{
+        var authData = facade.register("joe", "joe", "joe");
+        var createGameResponse = facade.createGames("newGame", authData.authToken());
+        Assertions.assertTrue(createGameResponse.gameID() > 0);
+    }
+
+    @Test
+    void joinNeg() throws Exception{
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.createGames("joe", "test");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
+    @Test
+    void observePos() throws Exception{
+        var authData = facade.register("joe", "joe", "joe");
+        var createGameResponse = facade.createGames("newGame", authData.authToken());
+        Assertions.assertTrue(createGameResponse.gameID() > 0);
+    }
+
+    @Test
+    void observeNeg() throws Exception{
+        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
+            facade.createGames("joe", "test");
+        });
+        String msg = "Error: unauthorized";
+        Assertions.assertTrue(ex.getMessage().contains(msg));
+    }
+
 
 }

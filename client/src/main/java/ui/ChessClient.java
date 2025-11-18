@@ -1,11 +1,10 @@
 package ui;
 
 import client.ServerFacade;
+import com.google.gson.Gson;
 import model.AuthData;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 import static ui.ChessBoard.*;
 
@@ -15,6 +14,7 @@ public class ChessClient {
     //private final WebSocketFacade ws;
     //private State state = state.SIGNEDOUT;
     private boolean loggedIn = false; // want to check if logged in first
+    private final Map<Integer, Integer> gameListMap = new HashMap<>();
 
     public ChessClient() {
         this.server = new ServerFacade("http://localhost:8080");
@@ -197,39 +197,62 @@ public class ChessClient {
     }
 
     public String list(){
-//        assertSignedIn();
-//        PetList pets = server.listPets();
-//        var result = new StringBuilder();
-//        var gson = new Gson();
-//        for (Pet pet : pets) {
-//            result.append(gson.toJson(pet)).append('\n');
-//        }
-//        return result.toString();
-        return "List of games";
+        try{
+            var games = server.listGames(this.authToken);
+
+            StringBuilder out = new StringBuilder();
+            gameListMap.clear();
+            int count = 1;
+            for(var game : games){
+                out.append(String.format("%s", game.gameName()));
+                out.append(String.format(" White: %s\n", game.whiteUsername()));
+                out.append(String.format(" Black: %s\n", game.blackUsername()));
+                count++;
+            }
+            return out.toString();
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String joinGames(String... params) {
         if(params.length != 2){
             return "Must provide <GAME_ID> and <WHITE|BLACK>";
         }
-        String gameID = params[0];
-        String playerColor = params[1];
-        String msg =  String.format("Joining %s as %s.",gameID, playerColor);
-        return switch (playerColor) {
-            case "white" -> msg + drawWhite();
-            case "black" -> msg + drawBlack();
-            default -> "Color must be 'white' or 'black'. ";
-        };
+
+        try{
+            String gameID = params[0];
+            int listNum = Integer.parseInt(gameID);
+            String playerColor = params[1];
+            int gameIDactual = gameListMap.get(listNum);
+            server.joinGame(gameIDactual, playerColor, this.authToken);
+            String msg =  String.format("Joining %s as %s.",gameID, playerColor);
+            return switch (playerColor) {
+                case "white" -> msg + drawWhite();
+                case "black" -> msg + drawBlack();
+                default -> "Color must be 'white' or 'black'. ";
+            };
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     public String observe(String... params){
         if(params.length != 1){
             return "Must provide <ID>";
         }
-        String gameID = params[0];
-        String msg =  String.format("Observing game %s", gameID);
-        return msg + drawWhite();
-
+        try{
+            String gameID = params[0];
+            int listNum = Integer.parseInt(gameID);
+            String playerColor = params[1];
+            int gameIDactual = gameListMap.get(listNum);
+            server.joinGame(gameIDactual, playerColor, this.authToken);
+            String msg =  String.format("Observing game %s", gameID);
+            return msg + drawWhite();
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
     }
 
     //GamePlay UI

@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Collection;
 
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
@@ -55,19 +56,21 @@ public class ServerFacade {
         return handleResponse(res, CreateGameResponse.class);
     }
 
-    public void listGames() throws Exception{
-
+    public Collection<GameData> listGames(String authToken) throws Exception{
+        var path = "/game";
+        var request = buildRequest("GET", path, null, authToken);
+        var response = sendRequest(request);
+        var res = handleResponse(response, ListGameResponse.class);
+        return res.games();
     }
 
-    public void joinGame() throws Exception{
-
+    public void joinGame(int gameID, String playerColor, String authToken) throws Exception{
+        var path = "/game";
+        var reqBody = new JoinGameRequest(playerColor, gameID);
+        var req = buildRequest("PUT", path, reqBody, authToken);
+        var response = sendRequest(req);
+        handleResponse(response, null);
     }
-
-//    public PetList listPets() throws ResponseException {
-//        var request = buildRequest("GET", "/pet", null);
-//        var response = sendRequest(request);
-//        return handleResponse(response, PetList.class);
-//    }
 
     private HttpRequest buildRequest(String method, String path, Object body){
         return buildRequest(method, path, body, null);
