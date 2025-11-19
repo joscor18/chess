@@ -34,24 +34,6 @@ public class ChessBoard {
         out.append("\n");
     }
 
-//    private static void drawHeader(PrintStream out, String headerText) {
-//        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-//        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-//
-//        out.print(EMPTY.repeat(prefixLength));
-//        printHeaderText(out, headerText);
-//        out.print(EMPTY.repeat(suffixLength));
-//    }
-//
-//    private static void printHeaderText(PrintStream out, String player) {
-//        out.print(SET_BG_COLOR_BLACK);
-//        out.print(SET_TEXT_COLOR_GREEN);
-//
-//        out.print(player);
-//
-//        setBlack(out);
-//    }
-
     private static String drawBoard(Boolean b) {
         StringBuilder out = new StringBuilder();
 
@@ -123,33 +105,5 @@ public class ChessBoard {
         out.append(piece);
     }
 
-//    private static void drawHorizontalLine(PrintStream out) {
-//
-//        int boardSizeInSpaces = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS +
-//                (BOARD_SIZE_IN_SQUARES - 1) * LINE_WIDTH_IN_PADDED_CHARS;
-//
-//        for (int lineRow = 0; lineRow < LINE_WIDTH_IN_PADDED_CHARS; ++lineRow) {
-//            setRed(out);
-//            out.print(EMPTY.repeat(boardSizeInSpaces));
-//
-//            setBlack(out);
-//            out.println();
-//        }
-//    }
-
-//    private static void setWhite(PrintStream out) {
-//        out.print(SET_BG_COLOR_WHITE);
-//        out.print(SET_TEXT_COLOR_WHITE);
-//    }
-//
-//    private static void setRed(PrintStream out) {
-//        out.print(SET_BG_COLOR_RED);
-//        out.print(SET_TEXT_COLOR_RED);
-//    }
-//
-//    private static void setBlack(PrintStream out) {
-//        out.print(SET_BG_COLOR_BLACK);
-//        out.print(SET_TEXT_COLOR_BLACK);
-//    }
 
 }

@@ -20,11 +20,6 @@ public class ChessClient {
         this.server = new ServerFacade("http://localhost:8080");
     }
 
-//    public PetClient(String serverUrl) throws ResponseException {
-//        server = new ServerFacade(serverUrl);
-//        ws = new WebSocketFacade(serverUrl, this);
-//    }
-
     public void run() {
         System.out.println("♕ Welcome to 240 Chess. Type Help to get Started. ♕");
         //System.out.print(help());
@@ -45,21 +40,6 @@ public class ChessClient {
         }
         System.out.println(" Exiting...");
     }
-
-//    public void notify(Notification notification) {
-//        System.out.println(RED + notification.message());
-//        printPrompt();
-//    }
-//
-//    private void printPrompt() {
-//        System.out.print("\n" + RESET + ">>> " + GREEN);
-//    }
-//
-//    private void assertSignedIn() throws ResponseException {
-//        if (state == State.SIGNEDOUT) {
-//            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
-//        }
-//    }
 
     public String eval(String input){
         if(!loggedIn){
