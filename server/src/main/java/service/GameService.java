@@ -39,22 +39,29 @@ public class GameService {
         if(game == null){
             throw new DataAccessException("bad request");
         }
-        if(playerColor != null){
-            if(playerColor.equalsIgnoreCase("White")){
-                if(game.whiteUsername() != null){
-                    throw new DataAccessException("already taken");
-                }
-                game = new GameData(game.gameID(), game.gameName(), authData.username(), game.blackUsername(),game.game());
-            }else if(playerColor.equalsIgnoreCase("Black")){
-                if(game.blackUsername() != null){
-                    throw new DataAccessException("already taken");
-                }
-                game = new GameData(game.gameID(), game.gameName(), game.whiteUsername() ,authData.username(),game.game());
-            }else {
-                throw new DataAccessException("bad request");
-            }
-            dataAccess.updateGame(game);
+
+        if(playerColor == null){
+            return;
         }
+        if(!playerColor.equalsIgnoreCase("White") &&
+                !playerColor.equalsIgnoreCase("black")){
+            throw new DataAccessException("bad request");
+        }
+        ;
+        if (playerColor.equalsIgnoreCase("White")) {
+            if (game.whiteUsername() != null) {
+                throw new DataAccessException("already taken");
+            }
+            game = new GameData(game.gameID(), game.gameName(), authData.username(), game.blackUsername(), game.game());
+        } else if (playerColor.equalsIgnoreCase("Black")) {
+            if (game.blackUsername() != null) {
+                throw new DataAccessException("already taken");
+            }
+            game = new GameData(game.gameID(), game.gameName(), game.whiteUsername(), authData.username(), game.game());
+        } else {
+            throw new DataAccessException("bad request");
+        }
+        dataAccess.updateGame(game);
     }
 
     public List<GameData> list(String authToken) throws Exception{
