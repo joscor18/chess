@@ -78,11 +78,11 @@ public class ChessBoard {
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             int c = b ? boardCol : (BOARD_SIZE_IN_SQUARES - 1 - boardCol);
 
-            boolean whiteSqu = (i + c) % 2 == 0;
-            if(whiteSqu){
-                out.append(SET_BG_COLOR_WHITE);
-            }else{
+            boolean blackSqu = (i + c) % 2 == 0;
+            if(blackSqu){
                 out.append(SET_BG_COLOR_BLACK);
+            }else{
+                out.append(SET_BG_COLOR_WHITE);
             }
 
             String piece = board[i][c];

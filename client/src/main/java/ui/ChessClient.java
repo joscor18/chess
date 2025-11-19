@@ -28,9 +28,9 @@ public class ChessClient {
         while(!Objects.equals(result, "quit")){
             //check status of Login
             if(!loggedIn){
-                System.out.print("[LOGGED_OUT] >>> ");
+                System.out.print("\n[LOGGED_OUT] >>> ");
             }else{
-                System.out.print("[LOGGED_IN] >>> ");
+                System.out.print("\n[LOGGED_IN] >>> ");
             }
 
             String line = scanner.nextLine();
@@ -169,7 +169,7 @@ public class ChessClient {
 
         try{
             var createGameResponse = server.createGames(gameName, this.authToken);
-            return String.format("Game %s created (ID: %d", gameName, createGameResponse.gameID());
+            return String.format("Game %s created ", gameName);
 
         }catch (Exception ex){
             return ex.getMessage();
