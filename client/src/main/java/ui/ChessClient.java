@@ -204,9 +204,11 @@ public class ChessClient {
             int count = 1;
             for(var game : games){
                 gameListMap.put(count, game.gameID());
-                out.append(String.format("%s", game.gameName()));
-                out.append(String.format(" White: %s\n", game.whiteUsername()));
-                out.append(String.format(" Black: %s\n", game.blackUsername()));
+                out.append(String.format("%d. %s", count, game.gameName()));
+                out.append(String.format(" White: %s\n", game.whiteUsername() != null
+                ? game.whiteUsername() : "<empty> "));
+                out.append(String.format(" Black: %s\n", game.blackUsername() != null
+                ? game.blackUsername() : "<empty> "));
                 count++;
             }
             return out.toString();
@@ -227,7 +229,7 @@ public class ChessClient {
             if(!gameListMap.containsKey(listNum)){
                 return "Game num " + listNum + "doesn't exist. Check 'list'.";
             }
-            String playerColor = params[1];
+            String playerColor = params[1].toLowerCase();
             int gameIDactual = gameListMap.get(listNum);
             server.joinGame(gameIDactual, playerColor, this.authToken);
             String msg =  String.format("Joining %s as %s.",gameID, playerColor);

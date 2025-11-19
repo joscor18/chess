@@ -102,7 +102,11 @@ public class ServerFacade {
         try {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            String msg = ex.getMessage();
+            if(msg == null){
+                msg = "Connection failed. Check server. \n";
+            }
+            throw new Exception(msg);
         }
     }
 
