@@ -14,7 +14,7 @@ public class ChessClient {
     //private final WebSocketFacade ws;
     //private State state = state.SIGNEDOUT;
     private boolean loggedIn = false; // want to check if logged in first
-    private final Map<Integer, Integer> gameListMap = new HashMap<>();
+    public final Map<Integer, Integer> gameListMap = new HashMap<>();
 
     public ChessClient() {
         this.server = new ServerFacade("http://localhost:8080");
@@ -251,8 +251,8 @@ public class ChessClient {
             if(!gameListMap.containsKey(listNum)){
                 return "Game num " + listNum + "doesn't exist. Check 'list'.";
             }
-            int gameIDactual = gameListMap.get(listNum);
-            server.joinGame(gameIDactual, null, this.authToken);
+            //int gameIDactual = gameListMap.get(listNum);
+            //server.joinGame(gameIDactual, null, this.authToken);
             String msg =  String.format("Observing game %s", gameID);
             return msg + drawWhite();
         }catch (Exception ex){

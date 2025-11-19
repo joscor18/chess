@@ -152,11 +152,11 @@ public class Server {
 
             var playerColor = joinreq.get("playerColor");
             var stringPlayerColor = (String)playerColor;
-//            if(stringPlayerColor == null){
-//                var msg = Map.of("message", "Error: bad request");
-//                ctx.status(400).result(serializer.toJson(msg));
-//                return;
-//            }
+            if(stringPlayerColor == null){
+                var msg = Map.of("message", "Error: bad request");
+                ctx.status(400).result(serializer.toJson(msg));
+                return;
+            }
             var gameId = joinreq.get("gameID");
             int gameIdCast = ((Number)gameId).intValue();
             gameService.joinGame(authToken, stringPlayerColor, gameIdCast);

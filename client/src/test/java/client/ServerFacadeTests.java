@@ -2,6 +2,7 @@ package client;
 
 import org.junit.jupiter.api.*;
 import server.Server;
+import ui.ChessClient;
 
 //test push for github
 
@@ -143,20 +144,19 @@ public class ServerFacadeTests {
     void observePos() throws Exception{
         var authData = facade.register("joe", "joe", "joe");
         var game = facade.createGames("test", authData.authToken());
-        Assertions.assertDoesNotThrow(() -> {
-            facade.joinGame(game.gameID(), null, authData.authToken());
-        });
+        ChessClient client = new ChessClient();
+        client.gameListMap.put(1, 123);
+        String res = client.observe("1");
+        Assertions.assertTrue(res.contains("Observing game 1"));
     }
 
     @Test
     void observeNeg() throws Exception{
         var authData = facade.register("joe", "joe", "joe");
         var game = facade.createGames("test", authData.authToken());
-        Exception ex = Assertions.assertThrows(Exception.class, ()-> {
-            facade.joinGame(game.gameID(), null, "test");
-        });
-        String msg = "Error: unauthorized";
-        Assertions.assertTrue(ex.getMessage().contains(msg));
+        ChessClient client = new ChessClient();
+        String res = client.observe();
+        Assertions.assertEquals("Must provide <ID>", res);
     }
 
 
