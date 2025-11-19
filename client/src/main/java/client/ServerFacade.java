@@ -66,7 +66,13 @@ public class ServerFacade {
 
     public void joinGame(int gameID, String playerColor, String authToken) throws Exception{
         var path = "/game";
-        var reqBody = new JoinGameRequest(playerColor, gameID);
+        JoinGameRequest reqBody;
+        if(playerColor == null){
+            reqBody = new JoinGameRequest(gameID);
+        }else{
+            reqBody = new JoinGameRequest(playerColor, gameID);
+        }
+
         var req = buildRequest("PUT", path, reqBody, authToken);
         var response = sendRequest(req);
         handleResponse(response, null);

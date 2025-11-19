@@ -2,7 +2,7 @@ package ui;
 
 import client.ServerFacade;
 import com.google.gson.Gson;
-import model.AuthData;
+import model.*;
 
 import java.util.*;
 
