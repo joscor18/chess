@@ -1,10 +1,6 @@
 package ui;
 
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-
 import static ui.EscapeSequences.*;
-
 
 public class ChessBoard {
     // Board dimensions.
@@ -104,6 +100,5 @@ public class ChessBoard {
 
         out.append(piece);
     }
-
 
 }
