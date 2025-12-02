@@ -8,6 +8,7 @@ import datamodel.GameData;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import server.webSocket.WebSocketHandler;
 import service.GameService;
 import service.UserService;
 
@@ -27,8 +28,15 @@ public class Server {
             dataAccess = new SqlDataAccess();
             userService = new UserService(dataAccess);
             gameService = new GameService(dataAccess);
+            WebSocketHandler wsHandler = new WebSocketHandler(dataAccess);
 
             server = Javalin.create(config -> config.staticFiles.add("web"));
+            server.ws("/ws", ws -> {
+                ws.onMessage(ctx -> {
+                    wsHandler.onMessage(ctx.session, ctx.message())
+                ;});
+            });
+            server.post("user", this::register);
 
             server.exception(Exception.class, (ex, ctx)->{
                 ctx.status(500);

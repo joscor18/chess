@@ -1,21 +1,27 @@
 package server.webSocket;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
+import datamodel.AuthData;
+import datamodel.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMess;
+import websocket.messages.NotifMess;
 
 import java.io.IOException;
 
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
 
-//    @Override
-//    public void handleConnect(WsConnectContext ctx) {
-//        System.out.println("Websocket connected");
-//        ctx.enableAutomaticPings();
-//    }
+    private final DataAccess dataAccess;
 
-    public void handleMessage(Session session, String msg) throws IOException {
+    public WebSocketHandler(DataAccess dataAccess) {
+        this.dataAccess = dataAccess;
+    }
+
+    public void onMessage(Session session, String msg) throws IOException {
         //Action action = new Gson().fromJson(ctx.message(), Action.class);
         UserGameCommand cmd = new Gson().fromJson(msg, UserGameCommand.class);
         switch (cmd.getCommandType()) {
@@ -27,12 +33,30 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(Session session, UserGameCommand cmd) throws  IOException{
-//        connections.add(session);
-//        var message = String.format("%s is in the shop", visitorName);
-//        var notification = new Notification(Notification.Type.ARRIVAL, message);
-//        connections.broadcast(session, notification);
+//    @Override
+//    public void handleConnect(WsConnectContext ctx) {
+//        System.out.println("Websocket connected");
+//        ctx.enableAutomaticPings();
+//    }
+
+    private void connect(Session session, UserGameCommand cmd) throws  IOException {
+        try {
+            AuthData authData = dataAccess.getAuth(cmd.getAuthToken());
+            GameData gameData = dataAccess.getGame(cmd.getGameID());
+            connections.add(cmd.getAuthToken(), cmd.getGameID(), session);
+//        var message = String.format("%s is in the game", cmd.getAuthToken());
+            LoadGameMess loadMsg = new LoadGameMess(gameData.game());
+            session.getRemote().sendString(new Gson().toJson(loadMsg));
+//        var notification = new NotifMess(session, message);
+            String msg = String.format("%s joined the game", authData.username());
+            NotifMess notif = new NotifMess(msg);
+            connections.broadcast(cmd.getAuthToken(), cmd.getGameID(), notif);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+
 
     private void resign(Session session, UserGameCommand cmd) throws IOException{
     }
@@ -53,7 +77,9 @@ public class WebSocketHandler {
 //            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
 //        }
         }
-    }
+
+
+}
 
 //    @Override
 //    public void handleClose(WsCloseContext ctx) {

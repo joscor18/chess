@@ -8,10 +8,11 @@ import java.io.IOException;
 
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Session> connections = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, Connect> connections = new ConcurrentHashMap<>();
 
-    public void add(String authToken, Session session) {
-        connections.put(authToken, session);
+    public void add(String authToken, Integer gameID, Session session) {
+        var connection = new Connect(authToken, gameID, session);
+        connections.put(authToken, connection);
     }
 
     public void remove(String authToken) {
