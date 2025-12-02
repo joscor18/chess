@@ -1,5 +1,6 @@
 package server.webSocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
@@ -20,11 +21,10 @@ public class ConnectionManager {
     }
 
     public void broadcast(String authToken, Integer gameID, ServerMessage notification) throws IOException {
-        String msg = notification.toString();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                if (!c.equals(authToken)) {
-                    c.send(msg);
+                if (c.gameID.equals(gameID) && !c.authToken.equals(authToken)) {
+                    c.send(new Gson().toJson(notification));
                 }
             }
         }

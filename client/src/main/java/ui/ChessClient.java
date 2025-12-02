@@ -1,23 +1,29 @@
 package ui;
 
+import chess.ChessGame;
+import client.NotifHandler;
 import client.ServerFacade;
+import client.WebSocketFacade;
 import com.google.gson.Gson;
 import model.*;
+import websocket.messages.LoadGameMess;
+import websocket.messages.NotifMess;
 
 import java.util.*;
 
 import static ui.ChessBoard.*;
 
-public class ChessClient {
+public class ChessClient implements NotifHandler {
     private String authToken = null;
     private final ServerFacade server;
-    //private final WebSocketFacade ws;
+    private WebSocketFacade ws;
     //private State state = state.SIGNEDOUT;
+    private final String serverURL = "http://localhost:8080";
     private boolean loggedIn = false; // want to check if logged in first
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
 
     public ChessClient() {
-        this.server = new ServerFacade("http://localhost:8080");
+        this.server = new ServerFacade(serverURL);
     }
 
     public void run() {
@@ -212,6 +218,10 @@ public class ChessClient {
             String playerColor = params[1].toLowerCase();
             int gameIDactual = gameListMap.get(listNum);
             server.joinGame(gameIDactual, playerColor, this.authToken);
+            if(ws == null){
+                ws = new WebSocketFacade(serverURL, this);
+            }
+            ws.connectChess(authToken, gameIDactual);
             String msg =  String.format("Joining %s as %s.",gameID, playerColor);
             return switch (playerColor) {
                 case "white" -> msg + drawWhite();
@@ -233,13 +243,22 @@ public class ChessClient {
             if(!gameListMap.containsKey(listNum)){
                 return "Game num " + listNum + "doesn't exist. Check 'list'.";
             }
-            //int gameIDactual = gameListMap.get(listNum);
+            int gameIDactual = gameListMap.get(listNum);
             //server.joinGame(gameIDactual, null, this.authToken);
+            if(ws == null){
+                ws = new WebSocketFacade(serverURL, this);
+            }
+            ws.connectChess(authToken, gameIDactual);
             String msg =  String.format("Observing game %s", gameID);
             return msg + drawWhite();
         }catch (Exception ex){
             return ex.getMessage();
         }
+    }
+
+    @Override
+    public void notify(NotifMess notifMess) {
+        System.out.println(notifMess);
     }
 
     //GamePlay UI
