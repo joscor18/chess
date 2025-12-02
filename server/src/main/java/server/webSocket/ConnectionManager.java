@@ -19,12 +19,12 @@ public class ConnectionManager {
         connections.remove(authToken);
     }
 
-    public void broadcast(String authToken, ServerMessage notification) throws IOException {
+    public void broadcast(String authToken, Integer gameID, ServerMessage notification) throws IOException {
         String msg = notification.toString();
-        for (Session c : connections.values()) {
-            if (c.isOpen()) {
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
                 if (!c.equals(authToken)) {
-                    c.getRemote().sendString(msg);
+                    c.send(msg);
                 }
             }
         }

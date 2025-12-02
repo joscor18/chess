@@ -4,8 +4,8 @@ public class NotifMess extends ServerMessage{
     private final String notifMess;
 
 
-    public NotifMess(ServerMessageType type, String notifMess) {
-        super(type);
+    public NotifMess(String notifMess) {
+        super(ServerMessageType.NOTIFICATION);
         this.notifMess = notifMess;
     }
 

@@ -6,12 +6,15 @@ import dataaccess.DataAccessException;
 import datamodel.AuthData;
 import datamodel.GameData;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMess;
 import websocket.messages.NotifMess;
 
 import java.io.IOException;
 
+@WebSocket
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
 
@@ -21,6 +24,7 @@ public class WebSocketHandler {
         this.dataAccess = dataAccess;
     }
 
+    @OnWebSocketMessage
     public void onMessage(Session session, String msg) throws IOException {
         //Action action = new Gson().fromJson(ctx.message(), Action.class);
         UserGameCommand cmd = new Gson().fromJson(msg, UserGameCommand.class);
@@ -76,10 +80,8 @@ public class WebSocketHandler {
 //        } catch (Exception ex) {
 //            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
 //        }
-        }
+    }
 
-
-}
 
 //    @Override
 //    public void handleClose(WsCloseContext ctx) {

@@ -36,7 +36,6 @@ public class Server {
                     wsHandler.onMessage(ctx.session, ctx.message())
                 ;});
             });
-            server.post("user", this::register);
 
             server.exception(Exception.class, (ex, ctx)->{
                 ctx.status(500);
