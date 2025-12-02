@@ -9,6 +9,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMess;
 import websocket.messages.NotifMess;
 
@@ -46,7 +47,15 @@ public class WebSocketHandler {
     private void connect(Session session, UserGameCommand cmd) throws  IOException {
         try {
             AuthData authData = dataAccess.getAuth(cmd.getAuthToken());
+            if(authData == null){
+                errorMess(session, "Error: unauthorized");
+                return;
+            }
             GameData gameData = dataAccess.getGame(cmd.getGameID());
+            if(gameData == null){
+                errorMess(session, "Error: game doesn't exist");
+                return;
+            }
             connections.add(cmd.getAuthToken(), cmd.getGameID(), session);
 //        var message = String.format("%s is in the game", cmd.getAuthToken());
             LoadGameMess loadMsg = new LoadGameMess(gameData.game());
@@ -80,6 +89,11 @@ public class WebSocketHandler {
 //        } catch (Exception ex) {
 //            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
 //        }
+    }
+
+    private void errorMess(Session session, String msg)throws IOException{
+        ErrorMessage error = new ErrorMessage(msg);
+        session.getRemote().sendString(new Gson().toJson(error));
     }
 
 
