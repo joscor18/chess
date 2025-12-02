@@ -10,8 +10,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
-import websocket.messages.LoadGameMess;
-import websocket.messages.NotifMess;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
 
@@ -56,13 +56,15 @@ public class WebSocketHandler {
                 errorMess(session, "Error: game doesn't exist");
                 return;
             }
+            System.out.println("DEBUG: GameObj for ID " + cmd.getGameID() + " is: " + gameData.gameID());
+            System.out.println("DEBUG: gameData.game() = " + gameData.game());
             connections.add(cmd.getAuthToken(), cmd.getGameID(), session);
 //        var message = String.format("%s is in the game", cmd.getAuthToken());
-            LoadGameMess loadMsg = new LoadGameMess(gameData.game());
+            LoadGameMessage loadMsg = new LoadGameMessage(gameData.game());
             session.getRemote().sendString(new Gson().toJson(loadMsg));
 //        var notification = new NotifMess(session, message);
             String msg = String.format("%s joined the game", authData.username());
-            NotifMess notif = new NotifMess(msg);
+            NotificationMessage notif = new NotificationMessage(msg);
             connections.broadcast(cmd.getAuthToken(), cmd.getGameID(), notif);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);

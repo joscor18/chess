@@ -1,7 +1,8 @@
 package client;
 
-import websocket.messages.NotifMess;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 public interface NotifHandler {
-    void notify(NotifMess notifMess);
+    void notify(ServerMessage notifMess);
 }

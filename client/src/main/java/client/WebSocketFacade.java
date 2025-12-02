@@ -3,7 +3,10 @@ package client;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
-import websocket.messages.NotifMess;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,8 +29,13 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    NotifMess notification = new Gson().fromJson(message, NotifMess.class);
-                    notificationHandler.notify(notification);
+                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+//                    NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                    switch (serverMessage.getServerMessageType()) {
+                        case LOAD_GAME -> notificationHandler.notify(new Gson().fromJson(message, LoadGameMessage.class));
+                        case ERROR -> notificationHandler.notify(new Gson().fromJson(message, ErrorMessage.class));
+                        case NOTIFICATION -> notificationHandler.notify(new Gson().fromJson(message, NotificationMessage.class));
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

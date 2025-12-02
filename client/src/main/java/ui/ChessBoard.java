@@ -1,17 +1,21 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
+
 import static ui.EscapeSequences.*;
 
 public class ChessBoard {
     // Board dimensions.
     private static final int BOARD_SIZE_IN_SQUARES = 8;
 
-    static String drawWhite(){
-        return drawBoard(true);
+    static String drawWhite(chess.ChessBoard board){
+        return drawBoard(board, true);
     }
 
-    static String drawBlack(){
-        return drawBoard(false);
+    static String drawBlack(chess.ChessBoard board){
+        return drawBoard(board, false);
     }
 
     private static void drawHeaders(StringBuilder out, boolean b) {
@@ -30,10 +34,10 @@ public class ChessBoard {
         out.append("\n");
     }
 
-    private static String drawBoard(Boolean b) {
+    private static String drawBoard(chess.ChessBoard board, Boolean b) {
         StringBuilder out = new StringBuilder();
 
-        String[][] board = initBoard();
+        //String[][] board = initBoard();
         out.append("\n");
         drawHeaders(out, b);
 
@@ -70,7 +74,7 @@ public class ChessBoard {
         };
     }
 
-    private static void drawRowOfSquares(StringBuilder out, boolean b, int i, String[][] board) {
+    private static void drawRowOfSquares(StringBuilder out, boolean b, int i, chess.ChessBoard board) {
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             int c = b ? boardCol : (BOARD_SIZE_IN_SQUARES - 1 - boardCol);
 
@@ -81,10 +85,40 @@ public class ChessBoard {
                 out.append(SET_BG_COLOR_WHITE);
             }
 
-            String piece = board[i][c];
-            printPiece(out, piece);
+//            String piece = board[i][c];
+            ChessPiece piece = board.getPiece(new ChessPosition(i + 1, c + 1));
+            String pieceString = pieceStringType(piece);
+            printPiece(out, pieceString);
         }
 
+    }
+
+    private static String pieceStringType(ChessPiece piece) {
+        if(piece == null){
+            return EMPTY;
+        }
+        ChessPiece.PieceType type = piece.getPieceType();
+        ChessGame.TeamColor color = piece.getTeamColor();
+
+        if(color == ChessGame.TeamColor.WHITE){
+            return switch (type){
+                case KNIGHT -> WHITE_KNIGHT;
+                case QUEEN -> WHITE_QUEEN;
+                case BISHOP -> WHITE_BISHOP;
+                case PAWN -> WHITE_PAWN;
+                case ROOK -> WHITE_ROOK;
+                case KING -> WHITE_KING;
+            };
+        }else{
+            return switch (type){
+                case KNIGHT -> BLACK_KNIGHT;
+                case QUEEN -> BLACK_QUEEN;
+                case BISHOP -> BLACK_BISHOP;
+                case PAWN -> BLACK_PAWN;
+                case ROOK -> BLACK_ROOK;
+                case KING -> BLACK_KING;
+            };
+        }
     }
 
     private static void printPiece(StringBuilder out, String piece) {

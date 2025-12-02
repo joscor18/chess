@@ -4,10 +4,11 @@ import chess.ChessGame;
 import client.NotifHandler;
 import client.ServerFacade;
 import client.WebSocketFacade;
-import com.google.gson.Gson;
 import model.*;
-import websocket.messages.LoadGameMess;
-import websocket.messages.NotifMess;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
@@ -222,12 +223,13 @@ public class ChessClient implements NotifHandler {
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
-            String msg =  String.format("Joining %s as %s.",gameID, playerColor);
-            return switch (playerColor) {
-                case "white" -> msg + drawWhite();
-                case "black" -> msg + drawBlack();
-                default -> "Color must be 'white' or 'black'. ";
-            };
+//            String msg =  String.format("Joining %s as %s.",gameID, playerColor);
+//            return switch (playerColor) {
+//                case "white" -> msg + drawWhite();
+//                case "black" -> msg + drawBlack();
+//                default -> "Color must be 'white' or 'black'. ";
+//            };
+            return String.format("Joining %s as %s.",gameID, playerColor);
         }catch (Exception ex){
             return ex.getMessage();
         }
@@ -249,15 +251,31 @@ public class ChessClient implements NotifHandler {
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
-            String msg =  String.format("Observing game %s", gameID);
-            return msg + drawWhite();
+//            String msg =  String.format("Observing game %s", gameID);
+//            return msg + drawWhite();
+            return String.format("Observing game %s", gameID);
         }catch (Exception ex){
             return ex.getMessage();
         }
     }
 
     @Override
-    public void notify(NotifMess notifMess) {
+    public void notify(ServerMessage notifMess) {
+        switch (notifMess.getServerMessageType()){
+            case LOAD_GAME -> {
+                LoadGameMessage loadGameMessage = (LoadGameMessage) notifMess;
+                ChessGame game = loadGameMessage.getGame();
+                System.out.println(drawWhite(game.getBoard()));
+            }
+            case ERROR -> {
+                ErrorMessage errorMessage = (ErrorMessage) notifMess;
+                System.out.println(errorMessage.getErrorMess());
+            }
+            case NOTIFICATION -> {
+                NotificationMessage notificationMessage = (NotificationMessage) notifMess;
+                System.out.println(notificationMessage.getNotifMess());
+            }
+        }
         System.out.println(notifMess);
     }
 
