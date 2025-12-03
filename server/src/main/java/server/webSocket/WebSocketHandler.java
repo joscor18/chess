@@ -72,9 +72,34 @@ public class WebSocketHandler {
         }
     }
 
-
-
     private void resign(Session session, UserGameCommand cmd) throws IOException{
+        try {
+            AuthData authData = dataAccess.getAuth(cmd.getAuthToken());
+            if(authData == null){
+                errorMess(session, "Error: unauthorized");
+                return;
+            }
+            GameData gameData = dataAccess.getGame(cmd.getGameID());
+            if(gameData == null){
+                errorMess(session, "Error: game doesn't exist");
+                return;
+            }
+            ChessGame game = gameData.game();
+           //determine game over conditions
+            if(game.isGameOver()){
+                errorMess(session, "Game is already over");
+                return;
+            }
+            game.setGameOver(true);
+
+            dataAccess.updateGame(gameData);
+
+            String notif = String.format("%s resigned, game over", authData.username());
+            NotificationMessage notificationMessage = new NotificationMessage(notif);
+            connections.broadcast("", cmd.getGameID(), notificationMessage);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void leave(Session session, UserGameCommand cmd) throws IOException{
@@ -84,6 +109,27 @@ public class WebSocketHandler {
                 errorMess(session, "Error: unauthorized");
                 return;
             }
+            GameData gameData = dataAccess.getGame(cmd.getGameID());
+            if(gameData == null){
+                errorMess(session, "Error: game doesn't exist");
+                return;
+            }
+
+            GameData updateGame = null;
+            if(authData.username().equals(gameData.whiteUsername())){
+                updateGame = new GameData(gameData.gameID(),
+                        gameData.gameName(),
+                        null,
+                        gameData.blackUsername(),
+                        gameData.game());
+            }else{
+                updateGame = new GameData(gameData.gameID(),
+                        gameData.gameName(),
+                        gameData.whiteUsername(),
+                        null,
+                        gameData.game());
+            }
+            dataAccess.updateGame(updateGame);
 
             connections.remove(cmd.getAuthToken());
 
