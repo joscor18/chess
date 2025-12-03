@@ -190,12 +190,9 @@ public class WebSocketHandler {
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast(authData.authToken(), movesCommand.getGameID(), notificationMessage);
         } catch (InvalidMoveException ex){
-            LoadGameMessage loadGameMessage = new LoadGameMessage(gameData.game());
-            session.getRemote().sendString(new Gson().toJson(loadGameMessage));
             errorMess(session, "Invalid move: " + ex.getMessage());
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             errorMess(session, "ERROR: " + ex.getMessage());
 //            throw new RuntimeException(ex);
         }

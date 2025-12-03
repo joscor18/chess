@@ -237,15 +237,13 @@ public class ChessClient implements NotifHandler {
             //figure out promotion
             if(params.length > 2){
                 String prom = params[2].toUpperCase();
-                if(prom.equals("Q")){
-                    promotion = ChessPiece.PieceType.QUEEN;
-                } else if (prom.equals("R")) {
-                    promotion = ChessPiece.PieceType.ROOK;
-                } else if (prom.equals("B")) {
-                    promotion = ChessPiece.PieceType.BISHOP;
-                } else if (prom.equals("N")) {
-                    promotion = ChessPiece.PieceType.KNIGHT;
-                }
+                promotion = switch (prom) {
+                    case "Q" -> ChessPiece.PieceType.QUEEN;
+                    case "R" -> ChessPiece.PieceType.ROOK;
+                    case "B" -> ChessPiece.PieceType.BISHOP;
+                    case "N" -> ChessPiece.PieceType.KNIGHT;
+                    default -> promotion;
+                };
             }
 
             ChessMove move = new ChessMove(startPos, endPos, promotion);
