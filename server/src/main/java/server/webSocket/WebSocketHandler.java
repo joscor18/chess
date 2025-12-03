@@ -1,5 +1,6 @@
 package server.webSocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -8,6 +9,7 @@ import datamodel.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import websocket.commands.MakeMovesCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -56,8 +58,6 @@ public class WebSocketHandler {
                 errorMess(session, "Error: game doesn't exist");
                 return;
             }
-            System.out.println("DEBUG: GameObj for ID " + cmd.getGameID() + " is: " + gameData.gameID());
-            System.out.println("DEBUG: gameData.game() = " + gameData.game());
             connections.add(cmd.getAuthToken(), cmd.getGameID(), session);
 //        var message = String.format("%s is in the game", cmd.getAuthToken());
             LoadGameMessage loadMsg = new LoadGameMessage(gameData.game());
@@ -84,13 +84,26 @@ public class WebSocketHandler {
     }
 
     private void makeMove(Session session, String msg) throws  IOException{
-//        try {
-//            var message = String.format("%s says %s", petName, sound);
-//            var notification = new Notification(Notification.Type.NOISE, message);
-//            connections.broadcast(null, notification);
-//        } catch (Exception ex) {
-//            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-//        }
+        try {
+            MakeMovesCommand movesCommand = new Gson().fromJson(msg, MakeMovesCommand.class);
+            AuthData authData = dataAccess.getAuth(movesCommand.getAuthToken());
+            if(authData == null){
+                errorMess(session, "Error: unauthorized");
+            }
+            GameData gameData = dataAccess.getGame(movesCommand.getGameID());
+            ChessGame game = gameData.game();
+
+            game.makeMove(movesCommand.getMove());
+
+            LoadGameMessage loadGameMessage = new LoadGameMessage(game);
+            connections.broadcast("", movesCommand.getGameID(), loadGameMessage);
+
+            String notif = String.format("%s made a move: %s", authData.username(), movesCommand.getMove().toString());
+            NotificationMessage notificationMessage = new NotificationMessage(notif);
+            connections.broadcast(authData.authToken(), movesCommand.getGameID(), notificationMessage);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void errorMess(Session session, String msg)throws IOException{

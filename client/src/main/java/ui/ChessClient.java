@@ -1,6 +1,9 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import client.NotifHandler;
 import client.ServerFacade;
 import client.WebSocketFacade;
@@ -22,6 +25,7 @@ public class ChessClient implements NotifHandler {
     private final String serverURL = "http://localhost:8080";
     private boolean loggedIn = false; // want to check if logged in first
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
+    private int currGameID = -1;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -144,6 +148,7 @@ public class ChessClient implements NotifHandler {
                 case "help" -> helpPost();
                 case "create" -> createGame(params);
                 case "list" -> list();
+                case "move" -> makeMove(params);
                 case "join" -> joinGames(params);
                 case "observe" -> observe(params);
                 case "logout" -> logOut();
@@ -153,6 +158,36 @@ public class ChessClient implements NotifHandler {
         } catch (Exception ex) {
             return ex.getMessage();
         }
+    }
+
+    private String makeMove(String[] params) {
+        if(params.length != 2){
+            return "Must provide move <START> <END>";
+        }
+
+        //determine if observer
+        try{
+            ChessPosition startPos = getPos(params[0]);
+            ChessPosition endPos = getPos(params[1]);
+
+            ChessPiece.PieceType promotion = null;
+            //figure out promotion
+            ChessMove move = new ChessMove(startPos, endPos, promotion);
+            ws.makeMove(authToken, currGameID, move);
+            return "Moving: " + params[0] + " to " + params[1];
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
+    }
+
+    private ChessPosition getPos(String param) {
+        char col = param.charAt(0);
+        char row = param.charAt(1);
+
+        int column = col - 'a' + 1;
+        int rows = row - '1' + 1;
+        return new ChessPosition(rows, column);
     }
 
     public String logOut() {
