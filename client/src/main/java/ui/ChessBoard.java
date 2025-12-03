@@ -1,8 +1,13 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static ui.EscapeSequences.*;
 
@@ -11,11 +16,11 @@ public class ChessBoard {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
 
     static String drawWhite(chess.ChessBoard board){
-        return drawBoard(board, true);
+        return drawBoard(board, true, null);
     }
 
     static String drawBlack(chess.ChessBoard board){
-        return drawBoard(board, false);
+        return drawBoard(board, false, null);
     }
 
     private static void drawHeaders(StringBuilder out, boolean b) {
@@ -34,7 +39,7 @@ public class ChessBoard {
         out.append("\n");
     }
 
-    private static String drawBoard(chess.ChessBoard board, Boolean b) {
+    private static String drawBoard(chess.ChessBoard board, boolean b, Set<ChessPosition> highlightPos) {
         StringBuilder out = new StringBuilder();
 
         //String[][] board = initBoard();
@@ -45,7 +50,7 @@ public class ChessBoard {
             int boardRow = b ? (BOARD_SIZE_IN_SQUARES - 1 - row) : row;
 
             drawSide(out, boardRow + 1);
-            drawRowOfSquares(out, b, boardRow, board);
+            drawRowOfSquares(out, b, boardRow, board, highlightPos);
             drawSide(out, boardRow + 1);
 
             out.append("\n");
@@ -61,19 +66,31 @@ public class ChessBoard {
         out.append(" ").append(i).append(" ");
     }
 
-    private static void drawRowOfSquares(StringBuilder out, boolean b, int i, chess.ChessBoard board) {
+    private static void drawRowOfSquares(StringBuilder out, boolean b, int rowI,
+                                         chess.ChessBoard board, Set<ChessPosition> highlightPos) {
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             int c = b ? boardCol : (BOARD_SIZE_IN_SQUARES - 1 - boardCol);
 
-            boolean blackSqu = (i + c) % 2 == 0;
-            if(blackSqu){
-                out.append(SET_BG_COLOR_BLACK);
-            }else{
-                out.append(SET_BG_COLOR_WHITE);
+            ChessPosition currPos = new ChessPosition(rowI + 1, c + 1);
+
+            boolean highlight = (highlightPos != null && highlightPos.contains(currPos));
+            boolean blackSqu = (rowI + c) % 2 == 0;
+            if(highlight){
+                if (blackSqu) {
+                    out.append(SET_BG_COLOR_GREEN);
+                } else {
+                    out.append(SET_BG_COLOR_YELLOW);
+                }
+            }else {
+                if (blackSqu) {
+                    out.append(SET_BG_COLOR_BLACK);
+                } else {
+                    out.append(SET_BG_COLOR_WHITE);
+                }
             }
 
 //            String piece = board[i][c];
-            ChessPiece piece = board.getPiece(new ChessPosition(i + 1, c + 1));
+            ChessPiece piece = board.getPiece(new ChessPosition(rowI + 1, c + 1));
             String pieceString = pieceStringType(piece);
             printPiece(out, pieceString);
         }
@@ -120,6 +137,22 @@ public class ChessBoard {
         }
 
         out.append(piece);
+    }
+
+    public static String drawBoardHighlights(chess.ChessBoard board,
+                                             Collection<ChessMove> moves,
+                                             boolean b, ChessPosition position){
+        Set<chess.ChessPosition> highlightPos = new HashSet<>();
+        if(moves != null){
+            for(chess.ChessMove move : moves){
+                highlightPos.add(move.getEndPosition());
+            }
+        }
+
+        if(position != null){
+            highlightPos.add(position);
+        }
+        return drawBoard(board, b, highlightPos);
     }
 
 }

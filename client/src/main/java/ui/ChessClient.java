@@ -26,6 +26,7 @@ public class ChessClient implements NotifHandler {
     private boolean loggedIn = false; // want to check if logged in first
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
     private String playerColor;
+    private ChessGame currGame;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -132,6 +133,8 @@ public class ChessClient implements NotifHandler {
                 list - games
                 join <ID> [WHITE|BLACK] - a game
                 observe <ID> - a game
+                move <START> <END> - move piece
+                highlight <POSITION> - possible moves
                 logout - when you are done
                 quit - playing chess
                 help - with possible commands
@@ -149,6 +152,7 @@ public class ChessClient implements NotifHandler {
                 case "create" -> createGame(params);
                 case "list" -> list();
                 case "move" -> makeMove(params);
+                case "highlight" -> highlightMoves(params);
                 case "join" -> joinGames(params);
                 case "observe" -> observe(params);
                 case "logout" -> logOut();
@@ -157,6 +161,22 @@ public class ChessClient implements NotifHandler {
             };
         } catch (Exception ex) {
             return ex.getMessage();
+        }
+    }
+
+    private String highlightMoves(String[] params) {
+        if(params.length != 1){
+            return "Expected highlight <POSITION>";
+        }
+
+        try{
+            ChessPosition position = getPos(params[0]);
+            Collection<ChessMove> moves = currGame.validMoves(position);
+            boolean white = (playerColor == null || playerColor.equalsIgnoreCase("white"));
+            System.out.println(drawBoardHighlights(currGame.getBoard(), moves, white, position));
+            return "";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -299,6 +319,7 @@ public class ChessClient implements NotifHandler {
             case LOAD_GAME -> {
                 LoadGameMessage loadGameMessage = (LoadGameMessage) notifMess;
                 ChessGame game = loadGameMessage.getGame();
+                this.currGame = loadGameMessage.getGame();
                 if(this.playerColor != null && this.playerColor.equalsIgnoreCase("black")){
                     System.out.println(drawBlack(game.getBoard()));
                 }else{
@@ -314,7 +335,6 @@ public class ChessClient implements NotifHandler {
                 System.out.println(notificationMessage.getNotifMess());
             }
         }
-        System.out.println(notifMess);
     }
 
     public void setAuthToken(String authToken){
