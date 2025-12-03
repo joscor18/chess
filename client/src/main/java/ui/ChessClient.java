@@ -224,7 +224,7 @@ public class ChessClient implements NotifHandler {
     }
 
     private String makeMove(String[] params) {
-        if(params.length != 2){
+        if(params.length < 2){
             return "Must provide move <START> <END>";
         }
 
@@ -235,6 +235,19 @@ public class ChessClient implements NotifHandler {
 
             ChessPiece.PieceType promotion = null;
             //figure out promotion
+            if(params.length > 2){
+                String prom = params[2].toUpperCase();
+                if(prom.equals("Q")){
+                    promotion = ChessPiece.PieceType.QUEEN;
+                } else if (prom.equals("R")) {
+                    promotion = ChessPiece.PieceType.ROOK;
+                } else if (prom.equals("B")) {
+                    promotion = ChessPiece.PieceType.BISHOP;
+                } else if (prom.equals("N")) {
+                    promotion = ChessPiece.PieceType.KNIGHT;
+                }
+            }
+
             ChessMove move = new ChessMove(startPos, endPos, promotion);
             if(this.currGameID == 0){
                 return "You are not observing any game";
