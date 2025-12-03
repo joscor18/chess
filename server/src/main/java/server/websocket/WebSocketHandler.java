@@ -62,7 +62,7 @@ public class WebSocketHandler {
             NotificationMessage notif = new NotificationMessage(msg);
             connections.broadcast(cmd.getAuthToken(), cmd.getGameID(), notif);
         } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            errorMess(session, "Error: " + e.getMessage());
         }
     }
 
@@ -99,7 +99,7 @@ public class WebSocketHandler {
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast("", cmd.getGameID(), notificationMessage);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            errorMess(session, "Error: " + ex.getMessage());
         }
     }
 
@@ -117,20 +117,24 @@ public class WebSocketHandler {
             }
 
             GameData updateGame = null;
+
             if(authData.username().equals(gameData.whiteUsername())){
                 updateGame = new GameData(gameData.gameID(),
                         gameData.gameName(),
                         null,
                         gameData.blackUsername(),
                         gameData.game());
-            }else{
+            }else if(authData.username().equals(gameData.blackUsername())){
                 updateGame = new GameData(gameData.gameID(),
                         gameData.gameName(),
                         gameData.whiteUsername(),
                         null,
                         gameData.game());
             }
-            dataAccess.updateGame(updateGame);
+
+            if(updateGame != null){
+                dataAccess.updateGame(updateGame);
+            }
 
             connections.remove(cmd.getAuthToken());
 
@@ -138,11 +142,12 @@ public class WebSocketHandler {
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast(authData.authToken(), cmd.getGameID(), notificationMessage);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            errorMess(session, "Error: " + ex.getMessage());
         }
     }
 
     private void makeMove(Session session, String msg) throws  IOException{
+        GameData gameData = null;
         try {
             MakeMovesCommand movesCommand = new Gson().fromJson(msg, MakeMovesCommand.class);
             AuthData authData = dataAccess.getAuth(movesCommand.getAuthToken());
@@ -150,7 +155,7 @@ public class WebSocketHandler {
                 errorMess(session, "Error: unauthorized");
                 return;
             }
-            GameData gameData = dataAccess.getGame(movesCommand.getGameID());
+            gameData = dataAccess.getGame(movesCommand.getGameID());
             if(gameData == null){
                 errorMess(session, "Error: game doesn't exist");
                 return;
@@ -185,9 +190,14 @@ public class WebSocketHandler {
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast(authData.authToken(), movesCommand.getGameID(), notificationMessage);
         } catch (InvalidMoveException ex){
-            errorMess(session, "Invalid move" + ex.getMessage());
+            LoadGameMessage loadGameMessage = new LoadGameMessage(gameData.game());
+            session.getRemote().sendString(new Gson().toJson(loadGameMessage));
+            errorMess(session, "Invalid move: " + ex.getMessage());
+
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            ex.printStackTrace();
+            errorMess(session, "ERROR: " + ex.getMessage());
+//            throw new RuntimeException(ex);
         }
     }
 

@@ -27,6 +27,7 @@ public class ChessClient implements NotifHandler {
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
     private String playerColor;
     private ChessGame currGame;
+    private int currGameID;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -157,10 +158,52 @@ public class ChessClient implements NotifHandler {
                 case "observe" -> observe(params);
                 case "logout" -> logOut();
                 case "quit" -> "quit";
+                case "leave" -> leave();
+                case "resign" -> resign();
                 default -> helpPost();
             };
         } catch (Exception ex) {
             return ex.getMessage();
+        }
+    }
+
+    private String resign() {
+        try{
+            if(currGameID == 0){
+                return "You are not in a game";
+            }
+
+            System.out.print("Are you sure you want to resign? <YES/NO>");
+            Scanner scanner = new Scanner(System.in);
+            String answer = scanner.nextLine().toLowerCase();
+
+            if(!answer.equalsIgnoreCase("yes")){
+                return "Canceling resignation";
+            }
+
+            ws.resignChess(authToken, currGameID);
+
+            return "Resigned the game";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String leave() {
+        try{
+            if(currGameID == 0){
+                return "You are not in a game";
+            }
+
+            ws.leaveChess(authToken, currGameID);
+
+            this.currGame = null;
+            this.currGameID = 0;
+            this.playerColor = null;
+
+            return "Left the game";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -193,8 +236,10 @@ public class ChessClient implements NotifHandler {
             ChessPiece.PieceType promotion = null;
             //figure out promotion
             ChessMove move = new ChessMove(startPos, endPos, promotion);
-            int currGameID = -1;
-            ws.makeMove(authToken, currGameID, move);
+            if(this.currGameID == 0){
+                return "You are not observing any game";
+            }
+            ws.makeMove(authToken, this.currGameID, move);
             return "Moving: " + params[0] + " to " + params[1];
 
         }catch (Exception ex){
@@ -274,6 +319,7 @@ public class ChessClient implements NotifHandler {
             }
             String playerColor = params[1].toLowerCase();
             int gameIDactual = gameListMap.get(listNum);
+            this.currGameID = gameIDactual;
             server.joinGame(gameIDactual, playerColor, this.authToken);
             this.playerColor = playerColor;
             if(ws == null){
@@ -302,6 +348,7 @@ public class ChessClient implements NotifHandler {
             }
             //server.joinGame(gameIDactual, null, this.authToken);
             this.playerColor = "white";
+            this.currGameID = gameIDactual;
             if(ws == null){
                 ws = new WebSocketFacade(serverURL, this);
             }
@@ -322,17 +369,21 @@ public class ChessClient implements NotifHandler {
                 this.currGame = loadGameMessage.getGame();
                 if(this.playerColor != null && this.playerColor.equalsIgnoreCase("black")){
                     System.out.println(drawBlack(game.getBoard()));
+                    printPrompt();
                 }else{
                     System.out.println(drawWhite(game.getBoard()));
+                    printPrompt();
                 }
             }
             case ERROR -> {
                 ErrorMessage errorMessage = (ErrorMessage) notifMess;
                 System.out.println(errorMessage.getErrorMess());
+                printPrompt();
             }
             case NOTIFICATION -> {
                 NotificationMessage notificationMessage = (NotificationMessage) notifMess;
                 System.out.println(notificationMessage.getNotifMess());
+                printPrompt();
             }
         }
     }
@@ -340,6 +391,10 @@ public class ChessClient implements NotifHandler {
     public void setAuthToken(String authToken){
         this.authToken = authToken;
         this.loggedIn = true;
+    }
+
+    public void printPrompt(){
+        System.out.print("\n[LOGGED_IN] >>> ");
     }
 
     //GamePlay UI
