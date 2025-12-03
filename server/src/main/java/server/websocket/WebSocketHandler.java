@@ -1,4 +1,4 @@
-package server.webSocket;
+package server.websocket;
 
 import chess.ChessGame;
 import chess.InvalidMoveException;
@@ -40,12 +40,6 @@ public class WebSocketHandler {
             case RESIGN -> resign(session, cmd);
         }
     }
-
-//    @Override
-//    public void handleConnect(WsConnectContext ctx) {
-//        System.out.println("Websocket connected");
-//        ctx.enableAutomaticPings();
-//    }
 
     private void connect(Session session, UserGameCommand cmd) throws  IOException {
         try {
@@ -201,11 +195,5 @@ public class WebSocketHandler {
         ErrorMessage error = new ErrorMessage(msg);
         session.getRemote().sendString(new Gson().toJson(error));
     }
-
-
-//    @Override
-//    public void handleClose(WsCloseContext ctx) {
-//        System.out.println("Websocket closed");
-//    }
 
 }

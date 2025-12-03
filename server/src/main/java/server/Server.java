@@ -8,7 +8,7 @@ import datamodel.GameData;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
-import server.webSocket.WebSocketHandler;
+import server.websocket.WebSocketHandler;
 import service.GameService;
 import service.UserService;
 

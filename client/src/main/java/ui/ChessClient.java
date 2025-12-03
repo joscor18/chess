@@ -25,6 +25,7 @@ public class ChessClient implements NotifHandler {
     private final String serverURL = "http://localhost:8080";
     private boolean loggedIn = false; // want to check if logged in first
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
+    private String playerColor;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -254,16 +255,11 @@ public class ChessClient implements NotifHandler {
             String playerColor = params[1].toLowerCase();
             int gameIDactual = gameListMap.get(listNum);
             server.joinGame(gameIDactual, playerColor, this.authToken);
+            this.playerColor = playerColor;
             if(ws == null){
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
-//            String msg =  String.format("Joining %s as %s.",gameID, playerColor);
-//            return switch (playerColor) {
-//                case "white" -> msg + drawWhite();
-//                case "black" -> msg + drawBlack();
-//                default -> "Color must be 'white' or 'black'. ";
-//            };
             return String.format("Joining %s as %s.",gameID, playerColor);
         }catch (Exception ex){
             return ex.getMessage();
@@ -285,6 +281,7 @@ public class ChessClient implements NotifHandler {
                 return "Log in first";
             }
             //server.joinGame(gameIDactual, null, this.authToken);
+            this.playerColor = "white";
             if(ws == null){
                 ws = new WebSocketFacade(serverURL, this);
             }
@@ -302,7 +299,11 @@ public class ChessClient implements NotifHandler {
             case LOAD_GAME -> {
                 LoadGameMessage loadGameMessage = (LoadGameMessage) notifMess;
                 ChessGame game = loadGameMessage.getGame();
-                System.out.println(drawWhite(game.getBoard()));
+                if(this.playerColor != null && this.playerColor.equalsIgnoreCase("black")){
+                    System.out.println(drawBlack(game.getBoard()));
+                }else{
+                    System.out.println(drawWhite(game.getBoard()));
+                }
             }
             case ERROR -> {
                 ErrorMessage errorMessage = (ErrorMessage) notifMess;
