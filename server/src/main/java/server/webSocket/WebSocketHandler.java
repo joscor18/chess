@@ -78,10 +78,21 @@ public class WebSocketHandler {
     }
 
     private void leave(Session session, UserGameCommand cmd) throws IOException{
-//        var message = String.format("%s left the shop", visitorName);
-//        var notification = new Notification(Notification.Type.DEPARTURE, message);
-//        connections.broadcast(session, notification);
-//        connections.remove(session);
+        try {
+            AuthData authData = dataAccess.getAuth(cmd.getAuthToken());
+            if(authData == null){
+                errorMess(session, "Error: unauthorized");
+                return;
+            }
+
+            connections.remove(cmd.getAuthToken());
+
+            String notif = String.format("%s left the game", authData.username());
+            NotificationMessage notificationMessage = new NotificationMessage(notif);
+            connections.broadcast(authData.authToken(), cmd.getGameID(), notificationMessage);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private void makeMove(Session session, String msg) throws  IOException{
