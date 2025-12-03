@@ -85,6 +85,13 @@ public class WebSocketHandler {
                 return;
             }
             ChessGame game = gameData.game();
+
+            if(!authData.username().equals(gameData.whiteUsername()) &&
+                    !authData.username().equals(gameData.blackUsername())){
+                errorMess(session, "Observers cannot resign");
+                return;
+            }
+
            //determine game over conditions
             if(game.isGameOver()){
                 errorMess(session, "Game is already over");
@@ -155,6 +162,10 @@ public class WebSocketHandler {
                 return;
             }
             ChessGame game = gameData.game();
+            if(game.isGameOver()){
+                errorMess(session, "Game is over cannot move");
+                return;
+            }
 
             if((game.getTeamTurn() == ChessGame.TeamColor.WHITE &&
                     !authData.username().equals(gameData.whiteUsername())) ||

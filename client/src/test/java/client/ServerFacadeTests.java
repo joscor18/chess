@@ -142,10 +142,14 @@ public class ServerFacadeTests {
 
     @Test
     void observePos() throws Exception{
-        var authData = facade.register("joe", "joe", "joe");
-        var game = facade.createGames("test", authData.authToken());
+        facade.register("joe", "joe", "joe");
         ChessClient client = new ChessClient();
-        client.gameListMap.put(1, 123);
+        String login = client.eval("login joe joe");
+//        Assertions.assertTrue(login.toLowerCase().contains("success"));
+        var authData = facade.login("joe", "joe");
+        client.setAuthToken(authData.authToken());
+        var game = facade.createGames("test", authData.authToken());
+        client.gameListMap.put(1, game.gameID());
         String res = client.observe("1");
         Assertions.assertTrue(res.contains("Observing game 1"));
     }

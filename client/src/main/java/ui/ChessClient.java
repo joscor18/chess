@@ -25,7 +25,6 @@ public class ChessClient implements NotifHandler {
     private final String serverURL = "http://localhost:8080";
     private boolean loggedIn = false; // want to check if logged in first
     public final Map<Integer, Integer> gameListMap = new HashMap<>();
-    private int currGameID = -1;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -173,6 +172,7 @@ public class ChessClient implements NotifHandler {
             ChessPiece.PieceType promotion = null;
             //figure out promotion
             ChessMove move = new ChessMove(startPos, endPos, promotion);
+            int currGameID = -1;
             ws.makeMove(authToken, currGameID, move);
             return "Moving: " + params[0] + " to " + params[1];
 
@@ -281,14 +281,16 @@ public class ChessClient implements NotifHandler {
                 return "Game num " + listNum + "doesn't exist. Check 'list'.";
             }
             int gameIDactual = gameListMap.get(listNum);
+            if(authToken == null){
+                return "Log in first";
+            }
             //server.joinGame(gameIDactual, null, this.authToken);
             if(ws == null){
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
-//            String msg =  String.format("Observing game %s", gameID);
-//            return msg + drawWhite();
             return String.format("Observing game %s", gameID);
+//            return msg + drawWhite();
         }catch (Exception ex){
             return ex.getMessage();
         }
@@ -312,6 +314,11 @@ public class ChessClient implements NotifHandler {
             }
         }
         System.out.println(notifMess);
+    }
+
+    public void setAuthToken(String authToken){
+        this.authToken = authToken;
+        this.loggedIn = true;
     }
 
     //GamePlay UI
