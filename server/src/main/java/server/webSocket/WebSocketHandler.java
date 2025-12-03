@@ -1,6 +1,7 @@
 package server.webSocket;
 
 import chess.ChessGame;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -93,6 +94,17 @@ public class WebSocketHandler {
             GameData gameData = dataAccess.getGame(movesCommand.getGameID());
             ChessGame game = gameData.game();
 
+            if(game.getTeamTurn() == ChessGame.TeamColor.WHITE &&
+                    !authData.username().equals(gameData.whiteUsername())){
+                errorMess(session, "It is not your turn");
+                return;
+            }
+            if(game.getTeamTurn() == ChessGame.TeamColor.BLACK &&
+                    !authData.username().equals(gameData.blackUsername())){
+                errorMess(session, "It is not your turn");
+                return;
+            }
+
             game.makeMove(movesCommand.getMove());
 
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
@@ -101,6 +113,8 @@ public class WebSocketHandler {
             String notif = String.format("%s made a move: %s", authData.username(), movesCommand.getMove().toString());
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast(authData.authToken(), movesCommand.getGameID(), notificationMessage);
+        } catch (InvalidMoveException ex){
+            errorMess(session, "Invalid move" + ex.getMessage());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
