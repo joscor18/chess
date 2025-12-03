@@ -90,22 +90,31 @@ public class WebSocketHandler {
             AuthData authData = dataAccess.getAuth(movesCommand.getAuthToken());
             if(authData == null){
                 errorMess(session, "Error: unauthorized");
-            }
-            GameData gameData = dataAccess.getGame(movesCommand.getGameID());
-            ChessGame game = gameData.game();
-
-            if(game.getTeamTurn() == ChessGame.TeamColor.WHITE &&
-                    !authData.username().equals(gameData.whiteUsername())){
-                errorMess(session, "It is not your turn");
                 return;
             }
-            if(game.getTeamTurn() == ChessGame.TeamColor.BLACK &&
-                    !authData.username().equals(gameData.blackUsername())){
+            GameData gameData = dataAccess.getGame(movesCommand.getGameID());
+            if(gameData == null){
+                errorMess(session, "Error: game doesn't exist");
+                return;
+            }
+            ChessGame game = gameData.game();
+
+            if((game.getTeamTurn() == ChessGame.TeamColor.WHITE &&
+                    !authData.username().equals(gameData.whiteUsername())) ||
+                    (game.getTeamTurn() == ChessGame.TeamColor.BLACK &&
+                    !authData.username().equals(gameData.blackUsername()))){
                 errorMess(session, "It is not your turn");
                 return;
             }
 
             game.makeMove(movesCommand.getMove());
+
+            GameData updateGame = new GameData(gameData.gameID(),
+                    gameData.gameName(),
+                    gameData.whiteUsername(),
+                    gameData.blackUsername(),
+                    game);
+            dataAccess.updateGame(updateGame);
 
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
             connections.broadcast("", movesCommand.getGameID(), loadGameMessage);
