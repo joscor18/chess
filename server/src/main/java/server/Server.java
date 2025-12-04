@@ -8,6 +8,7 @@ import datamodel.GameData;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import io.javalin.websocket.WsContext;
 import server.websocket.WebSocketHandler;
 import service.GameService;
 import service.UserService;
@@ -35,6 +36,7 @@ public class Server {
                 ws.onMessage(ctx -> {
                     wsHandler.onMessage(ctx.session, ctx.message())
                 ;});
+                ws.onConnect(WsContext::enableAutomaticPings);
             });
 
             server.exception(Exception.class, (ex, ctx)->{

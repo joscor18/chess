@@ -28,6 +28,7 @@ public class ChessClient implements NotifHandler {
     private String playerColor;
     private ChessGame currGame;
     private int currGameID;
+    private boolean inGame = false;
 
     public ChessClient() {
         this.server = new ServerFacade(serverURL);
@@ -57,6 +58,8 @@ public class ChessClient implements NotifHandler {
     public String eval(String input){
         if(!loggedIn){
             return evalPre(input);
+        }else if(inGame){
+            return evalGame(input);
         }else{
             return evalPost(input);
         }
@@ -134,8 +137,6 @@ public class ChessClient implements NotifHandler {
                 list - games
                 join <ID> [WHITE|BLACK] - a game
                 observe <ID> - a game
-                move <START> <END> - move piece
-                highlight <POSITION> - possible moves
                 logout - when you are done
                 quit - playing chess
                 help - with possible commands
@@ -152,119 +153,15 @@ public class ChessClient implements NotifHandler {
                 case "help" -> helpPost();
                 case "create" -> createGame(params);
                 case "list" -> list();
-                case "move" -> makeMove(params);
-                case "highlight" -> highlightMoves(params);
                 case "join" -> joinGames(params);
                 case "observe" -> observe(params);
                 case "logout" -> logOut();
                 case "quit" -> "quit";
-                case "leave" -> leave();
-                case "resign" -> resign();
                 default -> helpPost();
             };
         } catch (Exception ex) {
             return ex.getMessage();
         }
-    }
-
-    private String resign() {
-        try{
-            if(currGameID == 0){
-                return "You are not in a game";
-            }
-
-            System.out.print("Are you sure you want to resign? <YES/NO>");
-            Scanner scanner = new Scanner(System.in);
-            String answer = scanner.nextLine().toLowerCase();
-
-            if(!answer.equalsIgnoreCase("yes")){
-                return "Canceling resignation";
-            }
-
-            ws.resignChess(authToken, currGameID);
-
-            return "Resigned the game";
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
-    }
-
-    private String leave() {
-        try{
-            if(currGameID == 0){
-                return "You are not in a game";
-            }
-
-            ws.leaveChess(authToken, currGameID);
-
-            this.currGame = null;
-            this.currGameID = 0;
-            this.playerColor = null;
-
-            return "Left the game";
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
-    }
-
-    private String highlightMoves(String[] params) {
-        if(params.length != 1){
-            return "Expected highlight <POSITION>";
-        }
-
-        try{
-            ChessPosition position = getPos(params[0]);
-            Collection<ChessMove> moves = currGame.validMoves(position);
-            boolean white = (playerColor == null || playerColor.equalsIgnoreCase("white"));
-            System.out.println(drawBoardHighlights(currGame.getBoard(), moves, white, position));
-            return "";
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String makeMove(String[] params) {
-        if(params.length < 2){
-            return "Must provide move <START> <END>";
-        }
-
-        //determine if observer
-        try{
-            ChessPosition startPos = getPos(params[0]);
-            ChessPosition endPos = getPos(params[1]);
-
-            ChessPiece.PieceType promotion = null;
-            //figure out promotion
-            if(params.length > 2){
-                String prom = params[2].toUpperCase();
-                promotion = switch (prom) {
-                    case "Q" -> ChessPiece.PieceType.QUEEN;
-                    case "R" -> ChessPiece.PieceType.ROOK;
-                    case "B" -> ChessPiece.PieceType.BISHOP;
-                    case "N" -> ChessPiece.PieceType.KNIGHT;
-                    default -> promotion;
-                };
-            }
-
-            ChessMove move = new ChessMove(startPos, endPos, promotion);
-            if(this.currGameID == 0){
-                return "You are not observing any game";
-            }
-            ws.makeMove(authToken, this.currGameID, move);
-            return "Moving: " + params[0] + " to " + params[1];
-
-        }catch (Exception ex){
-            return ex.getMessage();
-        }
-    }
-
-    private ChessPosition getPos(String param) {
-        char col = param.charAt(0);
-        char row = param.charAt(1);
-
-        int column = col - 'a' + 1;
-        int rows = row - '1' + 1;
-        return new ChessPosition(rows, column);
     }
 
     public String logOut() {
@@ -337,6 +234,7 @@ public class ChessClient implements NotifHandler {
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
+            this.inGame = true;
             return String.format("Joining %s as %s.",gameID, playerColor);
         }catch (Exception ex){
             return ex.getMessage();
@@ -364,10 +262,52 @@ public class ChessClient implements NotifHandler {
                 ws = new WebSocketFacade(serverURL, this);
             }
             ws.connectChess(authToken, gameIDactual);
+            this.inGame = true;
             return String.format("Observing game %s", gameID);
 //            return msg + drawWhite();
         }catch (Exception ex){
             return ex.getMessage();
+        }
+    }
+
+    public String helpGame() {
+        return """
+                help - with possible commands
+                redraw - board
+                leave - game
+                move <START> <END> - move piece
+                resign - game
+                highlight <POSITION> - possible moves
+                quit - playing chess
+                """;
+    }
+
+    //GamePlay UI
+    public String evalGame(String input){
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            return switch (cmd) {
+                case "help" -> helpGame();
+                case "redraw" -> redrawBoard();
+                case "leave" -> leave();
+                case "move" -> makeMove(params);
+                case "resign" -> resign();
+                case "highlight" -> highlightMoves(params);
+                case "quit" -> "quit";
+                default -> helpGame();
+            };
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
+    }
+
+    private String redrawBoard() {
+        if(playerColor != null && playerColor.equalsIgnoreCase("Black")){
+            return drawBlack(currGame.getBoard());
+        }else {
+            return drawWhite(currGame.getBoard());
         }
     }
 
@@ -408,6 +348,110 @@ public class ChessClient implements NotifHandler {
         System.out.print("\n[LOGGED_IN] >>> ");
     }
 
-    //GamePlay UI
+    private String resign() {
+        try{
+            if(currGameID == 0){
+                return "You are not in a game";
+            }
 
+            System.out.print("Are you sure you want to resign? <YES/NO>");
+            Scanner scanner = new Scanner(System.in);
+            String answer = scanner.nextLine().toLowerCase();
+
+            if(!answer.equalsIgnoreCase("yes")){
+                return "Canceling resignation";
+            }
+
+            ws.resignChess(authToken, currGameID);
+            this.inGame = false;
+
+            return "Resigned the game";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String leave() {
+        try{
+            if(currGameID == 0){
+                return "You are not in a game";
+            }
+
+            ws.leaveChess(authToken, currGameID);
+
+            this.currGame = null;
+            this.currGameID = 0;
+            this.playerColor = null;
+
+            this.inGame = false;
+            return "Left the game";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String highlightMoves(String[] params) {
+        if(params.length != 1){
+            return "Expected highlight <POSITION>";
+        }
+
+        try{
+            ChessPosition position = getPos(params[0]);
+            Collection<ChessMove> moves = currGame.validMoves(position);
+            boolean white = (playerColor == null || playerColor.equalsIgnoreCase("white"));
+            System.out.println(drawBoardHighlights(currGame.getBoard(), moves, white, position));
+            return "";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String makeMove(String[] params) {
+        if(params.length < 2){
+            return "Must provide move <START> <END>";
+        }
+
+        //check index parameter (index out of bounds)
+        if(!params[0].matches("[a-h][1-8]") || !params[1].matches("[a-h][1-8]")){
+            return "Expected format <COLUMN/ROW> <COLUMN/ROW> eg. a2 a4";
+        }
+
+        //determine if observer
+        try{
+            ChessPosition startPos = getPos(params[0]);
+            ChessPosition endPos = getPos(params[1]);
+
+            ChessPiece.PieceType promotion = null;
+            //figure out promotion
+            if(params.length > 2){
+                String prom = params[2].toUpperCase();
+                promotion = switch (prom) {
+                    case "Q" -> ChessPiece.PieceType.QUEEN;
+                    case "R" -> ChessPiece.PieceType.ROOK;
+                    case "B" -> ChessPiece.PieceType.BISHOP;
+                    case "N" -> ChessPiece.PieceType.KNIGHT;
+                    default -> promotion;
+                };
+            }
+
+            ChessMove move = new ChessMove(startPos, endPos, promotion);
+            if(this.currGameID == 0){
+                return "You are not observing any game";
+            }
+            ws.makeMove(authToken, this.currGameID, move);
+            return "Moving: " + params[0] + " to " + params[1];
+
+        }catch (Exception ex){
+            return ex.getMessage();
+        }
+    }
+
+    private ChessPosition getPos(String param) {
+        char col = param.charAt(0);
+        char row = param.charAt(1);
+
+        int column = col - 'a' + 1;
+        int rows = row - '1' + 1;
+        return new ChessPosition(rows, column);
+    }
 }

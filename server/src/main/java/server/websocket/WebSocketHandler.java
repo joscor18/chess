@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
@@ -58,7 +60,14 @@ public class WebSocketHandler {
             LoadGameMessage loadMsg = new LoadGameMessage(gameData.game());
             session.getRemote().sendString(new Gson().toJson(loadMsg));
 //        var notification = new NotifMess(session, message);
-            String msg = String.format("%s joined the game", authData.username());
+            String msg;
+            if(authData.username().equals(gameData.whiteUsername())){
+                msg = String.format("%s joined the game as WHITE", authData.username());
+            }else if(authData.username().equals(gameData.blackUsername())){
+                msg = String.format("%s joined the game as BLACK", authData.username());
+            }else{
+                msg = String.format("%s joined the game as OBSERVER", authData.username());
+            }
             NotificationMessage notif = new NotificationMessage(msg);
             connections.broadcast(cmd.getAuthToken(), cmd.getGameID(), notif);
         } catch (DataAccessException e) {
@@ -183,10 +192,34 @@ public class WebSocketHandler {
                     game);
             dataAccess.updateGame(updateGame);
 
+            String opponent;
+            if(authData.username().equals(gameData.whiteUsername())){
+                opponent = gameData.blackUsername();
+            }else{
+                opponent = gameData.whiteUsername();
+            }
+            ChessGame.TeamColor currColor = game.getTeamTurn();
+
+            String message = null;
+            if(game.isInCheckmate(currColor)) {
+                message = String.format("%s is in CHECKMATE", opponent);
+            } else if (game.isInCheck(currColor)){
+                message = String.format("%s is in CHECK", opponent);
+            } else if (game.isInStalemate(currColor)) {
+                message = String.format("%s is in STALEMATE", opponent);
+            }
+            if(message != null){
+                NotificationMessage notifMess = new NotificationMessage(message);
+                connections.broadcast("", movesCommand.getGameID(), notifMess);
+            }
+
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
             connections.broadcast("", movesCommand.getGameID(), loadGameMessage);
 
-            String notif = String.format("%s made a move: %s", authData.username(), movesCommand.getMove().toString());
+            ChessMove move = movesCommand.getMove();
+            String startPos = moveAsString(move.getStartPosition());
+            String endPos = moveAsString(move.getEndPosition());
+            String notif = String.format("%s made a move: %s to %s", authData.username(), startPos, endPos);
             NotificationMessage notificationMessage = new NotificationMessage(notif);
             connections.broadcast(authData.authToken(), movesCommand.getGameID(), notificationMessage);
         } catch (InvalidMoveException ex){
@@ -201,6 +234,11 @@ public class WebSocketHandler {
     private void errorMess(Session session, String msg)throws IOException{
         ErrorMessage error = new ErrorMessage(msg);
         session.getRemote().sendString(new Gson().toJson(error));
+    }
+
+    private String moveAsString(ChessPosition pos){
+        char col = (char) ('a' + pos.getColumn() - 1);
+        return "" + col + pos.getRow();
     }
 
 }
